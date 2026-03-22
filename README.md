@@ -22,7 +22,7 @@
         .polaroid p { font-family: 'Courier New', monospace; font-weight: bold; margin-top: 15px; color: #555; font-size: 0.9rem; }
         ol { text-align: left; background: #f1f8ff; padding: 25px 40px; border-radius: 20px; }
 
-        /* Estilos para el Álbum Interactivo */
+/* Estilos para el Álbum Interactivo */
         .controles-album { margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
         .btn-foto { background: #f1f8ff; color: #0288d1; border: 2px solid #0288d1; padding: 8px 12px; border-radius: 50%; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-foto:hover, .btn-foto.activo { background: #0288d1; color: white; transform: scale(1.1); }
@@ -33,7 +33,6 @@
 
 <div class="interfaz-regalo">
     <h1>Nuestro Espacio ❤️</h1>
-    
     <div class="tabs">
         <button class="btn-tab" onclick="abrir('inicio')">Inicio</button>
         <button class="btn-tab" onclick="abrir('recordatorio')">Lo que vales</button>
@@ -42,16 +41,14 @@
         <button class="btn-tab" onclick="abrir('galeria')">Galería</button>
         <button class="btn-tab" onclick="abrir('album')">Nuestro Álbum 📸</button>
     </div>
-
-    <div id="inicio" class="ventana visible">
+<div id="inicio" class="ventana visible">
         <h4><u><em>¡Hola, mi palito bombón!</em></u></h4>
         <p style="color: #000080;">He creado este lugar digital para que siempre tengas un rinconcito donde refugiarte cuando me extrañes. 😊</p>
         <p style="color: #000080;">Explora las pestañas de arriba para descubrir las sorpresas.</p>
         <p style="color: #000080;">También por si quieres leer todas las chucherías que hago por vos y algunos recuerdos que tengo cada tanto.</p>
         <p style="color: #000080;">La verdad es que amo mucho y me cuesta no pensarte y me gusta darte detalles, aunque pequeños para mi requiere tiempo, paciencia y aprendizajes. 💋</p>
     </div>
-
-    <div id="recordatorio" class="ventana">
+<div id="recordatorio" class="ventana">
         <h3>Pequeño recordatorio de lo que vales</h3>
         <ol type="I">
             <li>Extraño como me besas de noche</li>
@@ -61,8 +58,7 @@
             <li>Y como te interesan mis pasatiempos</li>
         </ol>
     </div>
-
-    <div id="frasco-amor" class="ventana">
+<div id="frasco-amor" class="ventana">
         <h3>Frasco de Mensajes</h3>
         <p>Toca un corazón para sacar un pensamiento:</p>
         <div class="frasco-wrapper">
@@ -86,8 +82,7 @@
         </div>
         <div id="msg-amor" class="mensaje-display">¿Qué dirá hoy?</div>
     </div>
-
-    <div id="por-nosotros" class="ventana">
+<div id="por-nosotros" class="ventana">
         <h3>Por nosotros ✨</h3>
         <p>Toca un emoji para ver un deseo:</p>
         <div class="frasco-wrapper">
@@ -101,9 +96,8 @@
         <div id="msg-nos" class="mensaje-display">¿Qué saldrá?</div>
     </div>
 
-    <div id="galeria" class="ventana">
-        <h3></h3>
-        <!DOCTYPE html>
+<div id="galeria" class="ventana">
+
 <html lang="es">
 <head>
     <meta charset="UTF-8">
