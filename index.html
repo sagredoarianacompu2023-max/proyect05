@@ -124,12 +124,6 @@
         <div id="msg-nos" class="mensaje-display">¿Qué saldrá?</div>
     </div>
 
-    <div id="corazon" class="ventana">
-        <h3>Te Amo ❤️</h3>
-        <div id="container-canvas">
-            <canvas id="heartCanvas"></canvas>
-        </div>
-    </div>
 
     <div id="album" class="ventana">
         <h3>Nuestro Álbum 📸</h3>
@@ -179,7 +173,13 @@
             document.querySelectorAll('.btn-foto').forEach(b => b.classList.remove('activo'));
             btn.classList.add('activo');
         }
-         <div id="corazon" class="ventana">
+
+        <div id="corazon" class="ventana">
+        <h3>Te Amo ❤️</h3>
+        <div id="container-canvas">
+            <canvas id="heartCanvas"></canvas>
+        </div>
+    </div>
         const canvas = document.getElementById('heartCanvas');
         const ctx = canvas.getContext('2d');
         const texto = "te amo";
