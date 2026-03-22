@@ -3,35 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Partículas de Texto ✨</title>
+    <title>Galaxia✨</title>
     <style>
         body {
             margin: 0;
-            background-color: #0a0614;
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
+            background-color: #050208;
             overflow: hidden;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            font-family: 'Segoe UI', sans-serif;
         }
 
-        /* Estilo de la barra de entrada similar a la imagen */
+        /* Barra estilo la imagen de TikTok */
         .bar {
             position: absolute;
-            bottom: 30px;
-            width: 80%;
+            bottom: 40px;
+            width: 85%;
             max-width: 400px;
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(10, 6, 20, 0.75);
-            border: 1px solid rgba(168, 85, 247, 0.3);
+            background: rgba(15, 5, 25, 0.8);
+            border: 1px solid rgba(168, 85, 247, 0.4);
             border-radius: 60px;
-            padding: 8px 8px 8px 22px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 50px rgba(107, 33, 212, 0.1);
+            padding: 6px 6px 6px 20px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 0 30px rgba(107, 33, 212, 0.2);
             z-index: 10;
         }
 
@@ -39,32 +37,30 @@
             flex: 1;
             background: transparent;
             border: none;
-            color: white;
+            color: #e0aaff;
             font-size: 1rem;
             outline: none;
         }
 
         button {
-            background: #a855f7;
+            background: linear-gradient(45deg, #a855f7, #6366f1);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             transition: 0.3s;
+            text-transform: uppercase;
         }
 
         button:hover {
-            background: #c084fc;
-            box-shadow: 0 0 15px #a855f7;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
         }
 
-        canvas {
-            display: block;
-        }
+        canvas { display: block; }
     </style>
 </head>
 <body>
@@ -72,37 +68,37 @@
     <canvas id="canvas1"></canvas>
 
     <div class="bar">
-        <input type="text" id="inputField" placeholder="Escribe algo..." maxlength="10">
-        <button id="generateBtn">Generar</button>
+        <input type="text" id="inputField" placeholder="Escribe tu universo..." maxlength="12">
+        <button id="generateBtn">Expandir</button>
     </div>
 
     <script>
         const canvas = document.getElementById('canvas1');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        const ctx = canvas.getContext('2d', { alpha: false }); // Optimización de renderizado
+        
+        let width, height, particles = [];
+        const mouse = { x: null, y: null, radius: 80 };
 
-        let particles = [];
-        const numberOfParticles = 2000; // Cantidad de puntos
-        const mouse = { x: 0, y: 0, radius: 100 };
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
 
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.x;
-            mouse.y = e.y;
-        });
+        window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
+        window.addEventListener('resize', initCanvas);
 
         class Particle {
-            constructor(x, y) {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
+            constructor(x, y, color) {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
                 this.destX = x;
                 this.destY = y;
-                this.size = 1.5;
-                this.vx = 0;
-                this.vy = 0;
-                this.acc = 0.8;
-                this.friction = 0.85;
-                this.color = '#d81b60'; // Rosa/Morado de tu tema
+                this.color = color;
+                this.size = Math.random() * 2 + 1;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 0.5) * 10;
+                this.friction = 0.9;
+                this.ease = 0.05;
             }
 
             draw() {
@@ -113,23 +109,20 @@
             }
 
             update() {
-                // Movimiento hacia el destino
-                let dx = this.destX - this.x;
-                let dy = this.destY - this.y;
-                let distance = Math.sqrt(dx * dx + dy * dy);
-                let force = distance * 0.01;
+                // Movimiento hacia el texto con suavidad (estilo flotante)
+                this.vx += (this.destX - this.x) * this.ease;
+                this.vy += (this.destY - this.y) * this.ease;
 
-                this.vx += (dx / distance) * force;
-                this.vy += (dy / distance) * force;
-
-                // Interacción con mouse (se alejan)
-                let mdx = mouse.x - this.x;
-                let mdy = mouse.y - this.y;
-                let mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-                if (mdist < mouse.radius) {
-                    this.acc = 2;
-                    this.vx -= (mdx / mdist) * 2;
-                    this.vy -= (mdy / mdist) * 2;
+                // Interacción con mouse
+                if (mouse.x !== null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < mouse.radius) {
+                        let force = (mouse.radius - dist) / mouse.radius;
+                        this.vx -= dx * force * 0.6;
+                        this.vy -= dy * force * 0.6;
+                    }
                 }
 
                 this.vx *= this.friction;
@@ -139,51 +132,53 @@
             }
         }
 
-        function initText(text) {
+        function createText(text) {
             particles = [];
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 120px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-            
-            // Analizar los píxeles del texto dibujado
-            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const fontSize = Math.min(width / 6, 140);
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "white";
+            ctx.font = `bold ${fontSize}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(text.toUpperCase(), width / 2, height / 2);
 
-            // Crear partículas solo donde hay pixeles visibles (cada 4 para rendimiento)
-            for (let y = 0; y < canvas.height; y += 4) {
-                for (let x = 0; x < canvas.width; x += 4) {
-                    if (data[(y * canvas.width + x) * 4 + 3] > 128) {
-                        particles.push(new Particle(x, y));
+            const pixels = ctx.getImageData(0, 0, width, height).data;
+            ctx.clearRect(0, 0, width, height);
+
+            // Escaneo optimizado (cada 6 píxeles para ir más rápido)
+            for (let y = 0; y < height; y += 6) {
+                for (let x = 0; x < width; x += 6) {
+                    const index = (y * width + x) * 4;
+                    if (pixels[index + 3] > 128) {
+                        // Colores de galaxia: púrpuras, azules y rosas
+                        const colors = ['#ff00ff', '#7000ff', '#00d4ff', '#ffffff'];
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        particles.push(new Particle(x, y, color));
                     }
                 }
             }
         }
 
         function animate() {
-            ctx.fillStyle = 'rgba(10, 6, 20, 0.2)'; // Rastro sutil
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
+            // Fondo con rastro para efecto "espacial"
+            ctx.fillStyle = 'rgba(5, 2, 8, 0.15)';
+            ctx.fillRect(0, 0, width, height);
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
             requestAnimationFrame(animate);
         }
 
-        document.getElementById('generateBtn').addEventListener('click', () => {
-            const val = document.getElementById('inputField').value;
-            if (val) initText(val);
-        });
-
-        // Iniciar con tu frase
-        initText("TE AMO");
+        initCanvas();
+        createText("GALAXY");
         animate();
 
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
+        document.getElementById('generateBtn').onclick = () => {
+            const txt = document.getElementById('inputField').value;
+            if (txt.trim()) createText(txt);
+        };
     </script>
 </body>
 </html>
