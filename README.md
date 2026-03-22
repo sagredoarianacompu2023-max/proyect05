@@ -137,22 +137,16 @@
     </style>
 </head>
 <body>
-
-    <canvas id="heartCanvas"></canvas>
-    <div id="instrucciones">Toca para girar el corazón ❤️</div>
-
     <script>
         const canvas = document.getElementById('heartCanvas');
         const ctx = canvas.getContext('2d');
         const texto = "te amo";
         const color = "#FF69B4"; // Rosa fuerte
-        const cantidad = 360; // Densidad de palabras
-        
+        const cantidad = 360; // Densidad de palabras  
         let width, height;
         let mouseX = 0, mouseY = 0, pMouseX = 0, pMouseY = 0;
         let rotX = 0, rotY = 0;
         let isMoving = false;
-
         function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
@@ -160,102 +154,79 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
         }
-
         window.addEventListener('resize', resize);
         resize();
-
         // Generar los puntos del corazón 3D
         const puntos = [];
         for (let i = 0; i < cantidad; i++) {
             const t = Math.PI * 2 * (i / cantidad);
             const phi = Math.acos(2 * Math.random() - 1);
-            
-            // Fórmula matemática del corazón
+             // Fórmula matemática del corazón
             const x2d = 16 * Math.pow(Math.sin(t), 3);
-            const y2d = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-
-            // Distribución 3D
+            const y2d = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);// Distribución 3D
             const x = x2d * Math.sin(phi);
             const y = y2d * Math.sin(phi);
             const z = x2d * Math.cos(phi) * 1.5;
-
-            puntos.push({ x, y, z });
+  puntos.push({ x, y, z });
         }
-
-        function draw() {
+function draw() {
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, width, height);
-
-            if (!isMoving) {
+if (!isMoving) {
                 rotY += 0.05; // Giro automático suave
             } else {
                 rotY += (mouseX - pMouseX) * 0.05;
                 rotX += (mouseY - pMouseY) * 0.05;
             }
-
-            pMouseX = mouseX;
+    pMouseX = mouseX;
             pMouseY = mouseY;
-
-            // Ordenar puntos por profundidad (Z) para que se vea bien el 3D
+// Ordenar puntos por profundidad (Z) para que se vea bien el 3D
             const renderList = puntos.map(p => {
                 let x1 = p.x * Math.cos(rotY) + p.z * Math.sin(rotY);
                 let z1 = -p.x * Math.sin(rotY) + p.z * Math.cos(rotY);
                 let y1 = p.y * Math.cos(rotX) - z1 * Math.sin(rotX);
                 let z2 = p.y * Math.sin(rotX) + z1 * Math.cos(rotX);
-
-                const perspective = 500;
+const perspective = 500;
                 const scale = perspective / (perspective + z2 + 30);
                 const screenX = x1 * scale * 12 + width / 2;
                 const screenY = -y1 * scale * 12 + height / 2;
-                
                 return { x: screenX, y: screenY, z: z2 };
             });
-
-            renderList.sort((a, b) => b.z - a.z);
-
-            renderList.forEach(p => {
+renderList.sort((a, b) => b.z - a.z);
+renderList.forEach(p => {
                 const alpha = Math.max(0.1, 1 - (p.z + 15) / 40);
                 ctx.fillStyle = color;
                 ctx.globalAlpha = alpha;
                 ctx.fillText(texto, p.x, p.y);
             });
-
-            requestAnimationFrame(draw);
+requestAnimationFrame(draw);
         }
-
-        // Interacción
+   // Interacción
         const updatePos = (e) => {
             const pos = e.touches ? e.touches[0] : e;
             mouseX = pos.clientX;
             mouseY = pos.clientY;
         };
-
-        window.addEventListener('mousedown', e => { isMoving = true; updatePos(e); pMouseX = mouseX; pMouseY = mouseY; });
+window.addEventListener('mousedown', e => { isMoving = true; updatePos(e); pMouseX = mouseX; pMouseY = mouseY; });
         window.addEventListener('mousemove', updatePos);
         window.addEventListener('mouseup', () => isMoving = false);
         window.addEventListener('touchstart', e => { isMoving = true; updatePos(e); pMouseX = mouseX; pMouseY = mouseY; }, {passive: false});
         window.addEventListener('touchmove', e => { updatePos(e); e.preventDefault(); }, {passive: false});
         window.addEventListener('touchend', () => isMoving = false);
 
-        draw();
-    </script>
 </body>
-</html>
-
-
-       
+</html>    
     </div>
-
-    <div id="album" class="ventana">
+ <div id="album" class="ventana">
         <h3>Nuestro Álbum Interactivo 📸</h3>
         <p>Toca los números para ver nuestras fotos:</p>
         
-        <div id="visor-album" class="polaroid">
+<div id="visor-album" class="polaroid">
             <img id="foto-actual" src="https://i.postimg.cc/7ZnRD4cG/IMG-20251010-WA0052.jpg" alt="Nuestra foto">
             <p id="texto-actual"> me encanta pensar que pronto sere tu esposa ✨</p>
         </div>
 
-        <div class="controles-album">
+<div class="controles-album">
             <button class="btn-foto activo" onclick="cambiarFoto(0, this)">1</button>
             <button class="btn-foto" onclick="cambiarFoto(1, this)">2</button>
             <button class="btn-foto" onclick="cambiarFoto(2, this)">3</button>
