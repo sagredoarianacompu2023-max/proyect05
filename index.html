@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Universo Expansivo ✨</title>
+    <title>Galaxia✨</title>
     <style>
         body {
             margin: 0;
-            background-color: #050208; /* Fondo espacio profundo */
+            background-color: #020005;
             overflow: hidden;
             display: flex;
             justify-content: center;
@@ -15,22 +15,17 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
-        /* Barra estilo la imagen de TikTok */
         .bar {
             position: absolute;
             bottom: 30px;
             width: 85%;
             max-width: 380px;
             display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(15, 5, 25, 0.85);
-            border: 1px solid rgba(168, 85, 247, 0.4);
+            background: rgba(20, 10, 35, 0.6);
+            border: 1px solid rgba(168, 85, 247, 0.3);
             border-radius: 60px;
             padding: 6px 6px 6px 20px;
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            box-shadow: 0 0 30px rgba(107, 33, 212, 0.3);
+            backdrop-filter: blur(10px);
             z-index: 10;
         }
 
@@ -38,202 +33,126 @@
             flex: 1;
             background: transparent;
             border: none;
-            color: #e0aaff;
-            font-size: 1rem;
+            color: #f0abff;
             outline: none;
         }
 
-        input::placeholder { color: rgba(224, 170, 255, 0.5); }
-
         button {
-            background: linear-gradient(45deg, #a855f7, #6366f1);
+            background: #7e22ce;
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 0.75rem;
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 0.8rem;
         }
 
-        button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
-        }
-
-        canvas { display: block; }
+        canvas { display: block; filter: blur(4px); } /* El blur suaviza todo el gas */
     </style>
 </head>
 <body>
 
-    <canvas id="canvas1"></canvas>
+    <canvas id="galaxyCanvas"></canvas>
 
     <div class="bar">
-        <input type="text" id="inputField" placeholder="Escribe tu universo..." maxlength="12">
-        <button id="generateBtn">Expandir</button>
+        <input type="text" id="inputField" placeholder="Escribe tu mensaje..." maxlength="12">
+        <button id="btn">Expandir</button>
     </div>
 
     <script>
-        const canvas = document.getElementById('canvas1');
-        const ctx = canvas.getContext('2d', { alpha: false }); // Optimización para móviles
-        
-        let width, height;
-        let particles = [];
-        const numParticles = 280; // Cantidad exacta de puntos para la esfera inicial
-        const mouse = { x: null, y: null, radius: 60 };
+        const canvas = document.getElementById('galaxyCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, clouds = [];
 
-        function initCanvas() {
+        function init() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            ctx.fillStyle = "#050208";
-            ctx.fillRect(0, 0, width, height);
+            createGalaxy();
         }
 
-        window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
-        window.addEventListener('touchstart', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
-        window.addEventListener('touchend', () => { mouse.x = null; mouse.y = null; });
-        window.addEventListener('resize', initCanvas);
-
-        class Particle {
-            constructor(isSphere = false) {
-                this.color = this.getRandomColor();
-                this.size = Math.random() * 2.5 + 1.5; // Partículas más grandes para el brillo
-                this.friction = 0.92;
-                this.ease = 0.04;
-                this.vx = (Math.random() - 0.5) * 5;
-                this.vy = (Math.random() - 0.5) * 5;
-
-                if (isSphere) {
-                    // Nacer en forma de esfera central
-                    const angle = Math.random() * Math.PI * 2;
-                    const radius = Math.random() * 100;
-                    this.x = width / 2 + Math.cos(angle) * radius;
-                    this.y = height / 2 + Math.sin(angle) * radius;
-                    // Destino inicial: flotar un poco cerca del centro
-                    this.destX = this.x + (Math.random() - 0.5) * 50;
-                    this.destY = this.y + (Math.random() - 0.5) * 50;
-                } else {
-                    // Nacer fuera de la pantalla (para nuevas palabras)
-                    this.x = Math.random() * width;
-                    this.y = Math.random() * height;
-                }
+        class GasCloud {
+            constructor() {
+                this.reset();
             }
 
-            getRandomColor() {
-                // Colores galaxia: Magenta neón, violeta, cian y blanco
-                const colors = ['#ff00ff', '#7000ff', '#00d4ff', '#ffffff'];
-                return colors[Math.floor(Math.random() * colors.length)];
-            }
-
-            draw() {
-                // Efecto Glow (Brillo) - ¡Cuidado con el rendimiento!
-                ctx.shadowBlur = this.size * 2;
-                ctx.shadowColor = this.color;
-                ctx.fillStyle = this.color;
-                
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Resetear blur para rendimiento
-                ctx.shadowBlur = 0;
+            reset() {
+                this.x = width / 2;
+                this.y = height / 2;
+                this.size = Math.random() * 100 + 50;
+                this.angle = Math.random() * Math.PI * 2;
+                this.speed = Math.random() * 0.01 + 0.005;
+                this.dist = Math.random() * 150;
+                // Colores de nebulosa
+                const colors = ['rgba(147, 51, 234, 0.15)', 'rgba(59, 130, 246, 0.15)', 'rgba(236, 72, 153, 0.15)'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
             }
 
             update() {
-                // Física de "viento" espacial y suavidad
-                this.vx += (this.destX - this.x) * this.ease;
-                this.vy += (this.destY - this.y) * this.ease;
+                this.angle += this.speed;
+                this.currentX = this.x + Math.cos(this.angle) * this.dist;
+                this.currentY = this.y + Math.sin(this.angle) * this.dist;
+            }
 
-                // Interacción sutil con mouse/toque
-                if (mouse.x !== null) {
-                    let dx = mouse.x - this.x;
-                    let dy = mouse.y - this.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < mouse.radius) {
-                        let force = (mouse.radius - dist) / mouse.radius;
-                        this.vx -= dx * force * 0.4;
-                        this.vy -= dy * force * 0.4;
-                    }
-                }
+            draw() {
+                const gradient = ctx.createRadialGradient(
+                    this.currentX, this.currentY, 0,
+                    this.currentX, this.currentY, this.size
+                );
+                gradient.addColorStop(0, this.color);
+                gradient.addColorStop(1, 'transparent');
 
-                this.vx *= this.friction;
-                this.vy *= this.friction;
-                this.x += this.vx;
-                this.y += this.vy;
+                ctx.fillStyle = gradient;
+                ctx.globalCompositeOperation = 'screen'; // Hace que los colores se sumen
+                ctx.beginPath();
+                ctx.arc(this.currentX, this.currentY, this.size, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
 
-        // Crear la esfera central inicial
-        function createInitialSphere() {
-            particles = [];
-            for (let i = 0; i < numParticles; i++) {
-                particles.push(new Particle(true));
-            }
-        }
-
-        function createText(text) {
-            // Reutilizar partículas existentes para la expansión
-            const fontSize = Math.min(width / 6, 130);
-            ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = "white";
-            ctx.font = `bold ${fontSize}px sans-serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(text.toUpperCase(), width / 2, height / 2);
-
-            const pixels = ctx.getImageData(0, 0, width, height).data;
-            ctx.clearRect(0, 0, width, height);
-
-            let particleIndex = 0;
-            // Escaneo optimizado (saltos grandes para pocas partículas)
-            for (let y = 0; y < height; y += 7) {
-                for (let x = 0; x < width; x += 7) {
-                    const index = (y * width + x) * 4;
-                    if (pixels[index + 3] > 128) {
-                        if (particleIndex < particles.length) {
-                            // Asignar nuevo destino a partícula existente
-                            particles[particleIndex].destX = x;
-                            particles[particleIndex].destY = y;
-                        } else {
-                            // Crear nuevas si el texto necesita más
-                            const p = new Particle();
-                            p.destX = x;
-                            p.destY = y;
-                            particles.push(p);
-                        }
-                        particleIndex++;
-                    }
-                }
-            }
-            // Eliminar partículas sobrantes si el texto es corto
-            while (particles.length > particleIndex && particles.length > numParticles) {
-                particles.pop();
+        function createGalaxy() {
+            clouds = [];
+            for (let i = 0; i < 40; i++) {
+                clouds.push(new GasCloud());
             }
         }
 
         function animate() {
-            // Fondo con rastro galáctico
-            ctx.fillStyle = 'rgba(5, 2, 8, 0.2)';
+            ctx.fillStyle = '#020005';
             ctx.fillRect(0, 0, width, height);
 
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-            }
+            clouds.forEach(c => {
+                c.update();
+                c.draw();
+            });
+
             requestAnimationFrame(animate);
         }
 
-        initCanvas();
-        createInitialSphere(); // Comienza como esfera
-        animate();
-
-        document.getElementById('generateBtn').onclick = () => {
+        // Al escribir, la galaxia se "estira"
+        document.getElementById('btn').onclick = () => {
             const txt = document.getElementById('inputField').value;
-            if (txt.trim()) createText(txt);
+            if(txt) {
+                clouds.forEach(c => {
+                    c.dist += 100; // Expansión visual
+                    c.size += 20;
+                });
+                setTimeout(() => {
+                    // Simulación de formación de texto suave
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = "#f0abff";
+                    ctx.fillStyle = "white";
+                    ctx.font = "bold 60px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText(txt.toUpperCase(), width/2, height/2);
+                }, 500);
+            }
         };
+
+        window.addEventListener('resize', init);
+        init();
+        animate();
     </script>
 </body>
 </html>
