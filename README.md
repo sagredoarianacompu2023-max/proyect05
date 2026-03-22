@@ -60,7 +60,6 @@
         /* Estilos Canvas Corazón */
         #container-canvas { background: black; border-radius: 20px; overflow: hidden; position: relative; height: 350px; margin-top: 10px; }
         canvas { display: block; cursor: grab; }
-        canvas:active { cursor: grabbing; }
     </style>
 </head>
 <body>
@@ -72,7 +71,7 @@
         <button class="btn-tab" onclick="abrir('recordatorio')">Lo que vales</button>
         <button class="btn-tab" onclick="abrir('frasco-amor')">Frasco de Amor</button>
         <button class="btn-tab" onclick="abrir('por-nosotros')">Por nosotros</button>
-        <button class="btn-tab" onclick="abrir('corazon-3d')">Corazón 3D</button>
+        <button class="btn-tab" onclick="abrir('corazon-3d')">Galería</button>
         <button class="btn-tab" onclick="abrir('album')">Nuestro Álbum 📸</button>
     </div>
 
@@ -80,7 +79,8 @@
         <h4><u><em>¡Hola, mi palito bombón!</em></u></h4>
         <p style="color: #000080;">He creado este lugar digital para que siempre tengas un rinconcito donde refugiarte cuando me extrañes. 😊</p>
         <p style="color: #000080;">Explora las pestañas de arriba para descubrir las sorpresas.</p>
-        <p style="color: #000080;">Amo darte detalles, aunque pequeños, requieren mi tiempo y paciencia. 💋</p>
+        <p style="color: #000080;">También por si quieres leer todas las chucherías que hago por vos y algunos recuerdos que tengo cada tanto.</p>
+        <p style="color: #000080;">La verdad es que amo mucho y me cuesta no pensarte y me gusta darte detalles, aunque pequeños para mi requiere tiempo, paciencia y aprendizajes. 💋</p>
     </div>
 
     <div id="recordatorio" class="ventana">
@@ -106,202 +106,6 @@
             <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💕</span>
             <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💖</span>
             <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💝</span>
-        </div>
-        <div id="msg-amor" class="mensaje-display">¿Qué dirá hoy?</div>
-    </div>
-
-    <div id="por-nosotros" class="ventana">
-        <h3>Por nosotros ✨</h3>
-        <p>Toca un emoji para ver un deseo:</p>
-        <div class="frasco-wrapper">
-            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🌟</span>
-            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🍭</span>
-            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🎬</span>
-            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🍯</span>
-            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🎨</span>
-            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🎤</span>
-        </div>
-        <div id="msg-nos" class="mensaje-display">¿Qué saldrá?</div>
-    </div>
-
-    <div id="corazon-3d" class="ventana">
-        <h3>Te Amo ❤️</h3>
-        <p>Mantenlo presionado para girarlo</p>
-        <div id="container-canvas">
-            <canvas id="heartCanvas"></canvas>
-        </div>
-    </div>
-
-    <div id="album" class="ventana">
-        <h3>Nuestro Álbum Interactivo 📸</h3>
-        <div id="visor-album" class="polaroid">
-            <img id="foto-actual" src="https://i.postimg.cc/7ZnRD4cG/IMG-20251010-WA0052.jpg" alt="Nuestra foto">
-            <p id="texto-actual">me encanta pensar que pronto sere tu esposa ✨</p>
-        </div>
-        <div class="controles-album">
-            <button class="btn-foto activo" onclick="cambiarFoto(0, this)">1</button>
-            <button class="btn-foto" onclick="cambiarFoto(1, this)">2</button>
-            <button class="btn-foto" onclick="cambiarFoto(2, this)">3</button>
-            <button class="btn-foto" onclick="cambiarFoto(3, this)">4</button>
-            <button class="btn-foto" onclick="cambiarFoto(4, this)">5</button>
-            <button class="btn-foto" onclick="cambiarFoto(5, this)">6</button>
-            <button class="btn-foto" onclick="cambiarFoto(6, this)">7</button>
-        </div>
-    </div>
-
-    <script>
-        // --- LÓGICA DE PESTAÑAS ---
-        function abrir(id) {
-            document.querySelectorAll('.ventana').forEach(v => v.classList.remove('visible'));
-            document.getElementById(id).classList.add('visible');
-            if(id === 'corazon-3d') {
-                resizeCanvas();
-            }
-        }
-
-        // --- MENSAJES ALEATORIOS ---
-        const frasesAmor = [
-            "Vale por un beso interminable. 💋", "Gracias por hacerme tan feliz cada día. ✨",
-            "Eres mi persona favorita en el mundo entero. 🌎", "Amo cada pequeño detalle de ti. ❤️",
-            "¡Eres el mejor regalo que me dio la vida! 🎁", "Sos la personita más dulce que conozco. 🍭",
-            "Amo cuando me miras y sonreís. 😊", "Vale por una tarde de mimos sin fin. 🐾",
-            "Sos mi refugio favorito. 🏠", "Gracias por tenerme tanta paciencia. 💕",
-            "Me encanta cómo me hacés sentir. 💖", "Sos mucho más de lo que alguna vez soñé. ✨",
-            "Te amo hoy, mañana y siempre. 🌹"
-        ];
-
-        const frasesNosotros = [
-            "Vale por un secreto", "Vale por unos masajes", "Me gustan tus ojitos",
-            "Amo tus detalles", "Hacemos postrecito", "Dibujar juntos", 
-            "Cantar solos", "Ver una peli", "Te extraño todos los días", "Me haces muy feliz"
-        ];
-
-        function mostrarMensaje(id, lista) {
-            const display = document.getElementById(id);
-            display.style.opacity = 0;
-            setTimeout(() => {
-                display.innerText = lista[Math.floor(Math.random() * lista.length)];
-                display.style.opacity = 1;
-            }, 150);
-        }
-
-        // --- ÁLBUM INTERACTIVO ---
-        const fotosAlbum = [
-            { url: "https://i.postimg.cc/7ZnRD4cG/IMG-20251010-WA0052.jpg", texto: "¡me encanta pensar que pronto sere tu esposa! ✨" },
-            { url: "https://i.postimg.cc/k40sKYzJ/IMG_20251022_WA0036.jpg", texto: "me gusta esta foto con nuestra hija 🤗" },
-            { url: "https://i.postimg.cc/DwwrJK0G/IMG_20260110_WA0017.jpg", texto: "tus abrazos lo son todoo... 7w7 💋" },
-            { url: "https://i.postimg.cc/Y2GmwT1s/Captura-de-pantalla-2026-03-18-141804.png", texto: "Te extraño todos los días, mi vida. 💖" },
-            { url: "https://i.postimg.cc/Vkkqrcvb/IMG_20251212_WA0107.jpg", texto: "Gracias por cada paseo.💎" },
-            { url: "https://i.postimg.cc/cLLRgNCv/IMG_20251002_WA0074.jpg", texto: "los dias son mas lindos con vos.☀️" },
-            { url: "https://i.postimg.cc/Ghh8zxRw/IMG-20260312-WA0167(1).jpg", texto: "jaja como me miras es tan dulce.🥞🍰" }
-        ];
-
-        function cambiarFoto(indice, boton) {
-            const visor = document.getElementById('visor-album');
-            const imgActual = document.getElementById('foto-actual');
-            const txtActual = document.getElementById('texto-actual');
-            visor.style.opacity = 0;
-            setTimeout(() => {
-                imgActual.src = fotosAlbum[indice].url;
-                txtActual.innerText = fotosAlbum[indice].texto;
-                visor.style.opacity = 1;
-                document.querySelectorAll('.btn-foto').forEach(b => b.classList.remove('activo'));
-                boton.classList.add('activo');
-            }, 300);
-        }
-
-        // --- LÓGICA CORAZÓN 3D (CANVAS) ---
-        const canvas = document.getElementById('heartCanvas');
-        const ctx = canvas.getContext('2d');
-        const textoC = "te amo";
-        const colorC = "#FF69B4"; 
-        const cantidadC = 380;
-        let width, height;
-        let mouseX = 0, mouseY = 0, pMouseX = 0, pMouseY = 0;
-        let rotX = 0, rotY = 0;
-        let isMoving = false;
-
-        function resizeCanvas() {
-            const container = document.getElementById('container-canvas');
-            width = canvas.width = container.offsetWidth;
-            height = canvas.height = container.offsetHeight;
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        const puntos = [];
-        for (let i = 0; i < cantidadC; i++) {
-            const t = Math.PI * 2 * (i / cantidadC);
-            const phi = Math.acos(2 * Math.random() - 1);
-            const x2d = 16 * Math.pow(Math.sin(t), 3);
-            const y2d = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-            const x = x2d * Math.sin(phi);
-            const y = y2d * Math.sin(phi);
-            const z = x2d * Math.cos(phi) * 1.5;
-            puntos.push({ x, y, z });
-        }
-
-        function draw() {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, width, height);
-
-            if (!isMoving) {
-                rotY += 0.015;
-            } else {
-                rotY += (mouseX - pMouseX) * 0.01;
-                rotX += (mouseY - pMouseY) * 0.01;
-            }
-            pMouseX = mouseX;
-            pMouseY = mouseY;
-
-            const renderList = puntos.map(p => {
-                let x1 = p.x * Math.cos(rotY) + p.z * Math.sin(rotY);
-                let z1 = -p.x * Math.sin(rotY) + p.z * Math.cos(rotY);
-                let y1 = p.y * Math.cos(rotX) - z1 * Math.sin(rotX);
-                let z2 = p.y * Math.sin(rotX) + z1 * Math.cos(rotX);
-                const scale = 400 / (400 + z2 + 30);
-                const screenX = x1 * scale * 8 + width / 2;
-                const screenY = -y1 * scale * 8 + height / 2;
-                return { x: screenX, y: screenY, z: z2 };
-            });
-
-            renderList.sort((a, b) => b.z - a.z);
-
-            renderList.forEach(p => {
-                const alpha = Math.max(0.1, 1 - (p.z + 15) / 30);
-                ctx.fillStyle = colorC;
-                ctx.globalAlpha = alpha;
-                ctx.font = "bold 12px Arial";
-                ctx.fillText(textoC, p.x, p.y);
-            });
-            requestAnimationFrame(draw);
-        }
-
-        canvas.addEventListener('mousedown', e => { isMoving = true; mouseX = e.offsetX; mouseY = e.offsetY; pMouseX = mouseX; pMouseY = mouseY; });
-        window.addEventListener('mousemove', e => { if(isMoving) { mouseX = e.clientX; mouseY = e.clientY; } });
-        window.addEventListener('mouseup', () => isMoving = false);
-        
-        canvas.addEventListener('touchstart', e => { 
-            isMoving = true; 
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            mouseX = touch.clientX - rect.left;
-            mouseY = touch.clientY - rect.top;
-            pMouseX = mouseX; pMouseY = mouseY;
-        }, {passive: false});
-        canvas.addEventListener('touchmove', e => { 
-            if(isMoving) {
-                const touch = e.touches[0];
-                const rect = canvas.getBoundingClientRect();
-                mouseX = touch.clientX - rect.left;
-                mouseY = touch.clientY - rect.top;
-            }
-            e.preventDefault(); 
-        }, {passive: false});
-        canvas.addEventListener('touchend', () => isMoving = false);
-
-        draw();
-    </script>
-</body>
-</html>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💗</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💓</span>
+            <span class="emoji-
