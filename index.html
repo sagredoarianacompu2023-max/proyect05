@@ -124,7 +124,7 @@
         <div id="msg-nos" class="mensaje-display">¿Qué saldrá?</div>
     </div>
 
-    <div id="galeria" class="ventana">
+    <div id="corazon" class="ventana">
         <h3>Te Amo ❤️</h3>
         <div id="container-canvas">
             <canvas id="heartCanvas"></canvas>
@@ -179,8 +179,7 @@
             document.querySelectorAll('.btn-foto').forEach(b => b.classList.remove('activo'));
             btn.classList.add('activo');
         }
-
-        // --- TU LÓGICA ORIGINAL DEL CORAZÓN 3D ---
+        
         const canvas = document.getElementById('heartCanvas');
         const ctx = canvas.getContext('2d');
         const texto = "te amo";
