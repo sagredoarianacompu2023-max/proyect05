@@ -68,23 +68,19 @@
     <div id="inicio" class="ventana visible">
         <h4><u><em>¡para mi personita mas importante !</em></u></h4>
         <p> hola bb, nomas paso para avisarte que en este momento te estoy pensando, como lo hago en cada momento del dia y a cada hora.😊</p>
-        <P> me haces muy feliz aunque sea media terca y loquita me gusta estar contigo aunque aveces nos perdemos en la rutina del dia al dia
-        me gusta saber que estas ahi conmigo y que en cualquier momento puedo darte un beso o un abrazo para sentirme bien. </P>
-        <p> no tenes idea de lo mucho que te amo y valoro que estes en mi vida
-        aunque no lo creas eres el mejor novio que pude aver tenido y tengo suerte de que te hayas cruzado en mi camino </p>
-
-                                                            <h3> te amo mi negrito</h3>
+        <P> me haces muy feliz aunque sea media terca y loquita me gusta estar contigo aunque aveces nos perdemos en la rutina del dia al dia me gusta saber que estas ahi conmigo y que en cualquier momento puedo darte un beso o un abrazo para sentirme bien. </P>
+        <p> no tenes idea de lo mucho que te amo y valoro que estes en mi vida aunque no lo creas eres el mejor novio que pude aver tenido y tengo suerte de que te hayas cruzado en mi camino </p>
+        <h3> te amo mi negrito</h3>
         <p>en cada pestañas encuentras una sorpresas.</p>
     </div>
 
     <div id="recordatorio" class="ventana">
         <h4>Pequeño recordatorio de lo que vales</h4>
-       <h2>gracias por tus regalos me encanta estar con huguito acostada aunque ya no tenga tu perfume
-       los anillos, las cartas que haces con esfuerzo, el collar, las salidas, las flores, y las muchas cosas que venis haciendo.</h2>
-      <h1> -eres muy atento y cariñoso, siempre te preocupas y me cuidas</h1>
-      <h1> -eres muy colgado y olvidon jajaj voy a tener que regañarte muchas veces por eso ;)</h1>
+        <h2>gracias por tus regalos me encanta estar con huguito acostada aunque ya no tenga tu perfume los anillos, las cartas que haces con esfuerzo, el collar, las salidas, las flores, y las muchas cosas que venis haciendo.</h2>
+        <h1> -eres muy atento y cariñoso, siempre te preocupas y me cuidas</h1>
+        <h1> -eres muy colgado y olvidon jajaj voy a tener que regañarte muchas veces por eso ;)</h1>
         <p>eres muy especial para mi, mi tesoro, mi futuro esposo y futuro papi </p>
-                            <h5>TE AMO MUCHO BB</h5>
+        <h5>TE AMO MUCHO BB</h5>
     </div>
 
     <div id="frasco-amor" class="ventana">
@@ -124,6 +120,12 @@
         <div id="msg-nos" class="mensaje-display">¿Qué saldrá?</div>
     </div>
 
+    <div id="corazon" class="ventana">
+        <h3>Te Amo ❤️</h3>
+        <div id="container-canvas">
+            <canvas id="heartCanvas"></canvas>
+        </div>
+    </div>
 
     <div id="album" class="ventana">
         <h3>Nuestro Álbum 📸</h3>
@@ -146,7 +148,7 @@
         function abrir(id) {
             document.querySelectorAll('.ventana').forEach(v => v.classList.remove('visible'));
             document.getElementById(id).classList.add('visible');
-            if(id === 'galeria') resize();
+            if(id === 'corazon') resize();
         }
 
         const frasesAmor = ["Vale por un beso interminable. 💋", "Gracias por hacerme tan feliz cada día. ✨", "Eres mi persona favorita en el mundo entero. 🌎", "Amo cada pequeño detalle de ti. ❤️", "¡Eres el mejor regalo que me dio la vida! 🎁", "Sos la personita más dulce que conozco. 🍭", "Amo cuando me miras y sonreís. 😊", "Vale por una tarde de mimos sin fin. 🐾", "Sos mi refugio favorito. 🏠", "Gracias por tenerme tanta paciencia. 💕", "Me encanta cómo me hacés sentir. 💖", "Sos mucho más de lo que alguna vez soñé. ✨", "Te amo hoy, mañana y siempre. 🌹"];
@@ -174,11 +176,7 @@
             btn.classList.add('activo');
         }
 
- <div id="corazon" class="ventana">
-        <h3>Te Amo ❤️</h3>
-        <div id="container-canvas">
-            <canvas id="heartCanvas"></canvas>
-    
+        // Lógica del Corazón 3D
         const canvas = document.getElementById('heartCanvas');
         const ctx = canvas.getContext('2d');
         const texto = "te amo";
