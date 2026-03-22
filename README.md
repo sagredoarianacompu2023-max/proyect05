@@ -102,7 +102,146 @@
     </div>
 
     <div id="galeria" class="ventana">
-        <h3>AAAA</h3>
+        <h3></h3>
+        <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Te Amo ❤️</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+        }
+        #instrucciones {
+            position: absolute;
+            bottom: 30px;
+            color: rgba(255, 105, 180, 0.6);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-size: 14px;
+            pointer-events: none;
+            text-align: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="heartCanvas"></canvas>
+    <div id="instrucciones">Toca para girar el corazón ❤️</div>
+
+    <script>
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+        const texto = "te amo";
+        const color = "#FF69B4"; // Rosa fuerte
+        const cantidad = 360; // Densidad de palabras
+        
+        let width, height;
+        let mouseX = 0, mouseY = 0, pMouseX = 0, pMouseY = 0;
+        let rotX = 0, rotY = 0;
+        let isMoving = false;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            ctx.font = "bold 15px Arial";
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Generar los puntos del corazón 3D
+        const puntos = [];
+        for (let i = 0; i < cantidad; i++) {
+            const t = Math.PI * 2 * (i / cantidad);
+            const phi = Math.acos(2 * Math.random() - 1);
+            
+            // Fórmula matemática del corazón
+            const x2d = 16 * Math.pow(Math.sin(t), 3);
+            const y2d = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+
+            // Distribución 3D
+            const x = x2d * Math.sin(phi);
+            const y = y2d * Math.sin(phi);
+            const z = x2d * Math.cos(phi) * 1.5;
+
+            puntos.push({ x, y, z });
+        }
+
+        function draw() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, width, height);
+
+            if (!isMoving) {
+                rotY += 0.05; // Giro automático suave
+            } else {
+                rotY += (mouseX - pMouseX) * 0.05;
+                rotX += (mouseY - pMouseY) * 0.05;
+            }
+
+            pMouseX = mouseX;
+            pMouseY = mouseY;
+
+            // Ordenar puntos por profundidad (Z) para que se vea bien el 3D
+            const renderList = puntos.map(p => {
+                let x1 = p.x * Math.cos(rotY) + p.z * Math.sin(rotY);
+                let z1 = -p.x * Math.sin(rotY) + p.z * Math.cos(rotY);
+                let y1 = p.y * Math.cos(rotX) - z1 * Math.sin(rotX);
+                let z2 = p.y * Math.sin(rotX) + z1 * Math.cos(rotX);
+
+                const perspective = 500;
+                const scale = perspective / (perspective + z2 + 30);
+                const screenX = x1 * scale * 12 + width / 2;
+                const screenY = -y1 * scale * 12 + height / 2;
+                
+                return { x: screenX, y: screenY, z: z2 };
+            });
+
+            renderList.sort((a, b) => b.z - a.z);
+
+            renderList.forEach(p => {
+                const alpha = Math.max(0.1, 1 - (p.z + 15) / 40);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha;
+                ctx.fillText(texto, p.x, p.y);
+            });
+
+            requestAnimationFrame(draw);
+        }
+
+        // Interacción
+        const updatePos = (e) => {
+            const pos = e.touches ? e.touches[0] : e;
+            mouseX = pos.clientX;
+            mouseY = pos.clientY;
+        };
+
+        window.addEventListener('mousedown', e => { isMoving = true; updatePos(e); pMouseX = mouseX; pMouseY = mouseY; });
+        window.addEventListener('mousemove', updatePos);
+        window.addEventListener('mouseup', () => isMoving = false);
+        window.addEventListener('touchstart', e => { isMoving = true; updatePos(e); pMouseX = mouseX; pMouseY = mouseY; }, {passive: false});
+        window.addEventListener('touchmove', e => { updatePos(e); e.preventDefault(); }, {passive: false});
+        window.addEventListener('touchend', () => isMoving = false);
+
+        draw();
+    </script>
+</body>
+</html>
+
 
        
     </div>
