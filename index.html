@@ -3,99 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soft Galaxy 🌌</title>
+    <title>Nuestro Espacio ❤️</title>
     <style>
-        body {
-            margin: 0;
-            background-color: #050208;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', sans-serif;
+        body { 
+            background-image: url('https://i.postimg.cc/9fshvVKK/descargar-(3).jpg'); 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed; 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            min-height: 100vh;
         }
+        
+        h1 { color: #3366ff; background-color: #ccffff; display: inline-block; padding: 10px; border-radius: 15px; font-size: 1.6rem; text-align: center; margin-top: 0; }
+        
+        .tabs { margin: 20px 0; display: flex; flex-wrap: wrap; justify-content: center; z-index: 1000; }
+        
+        .btn-tab { background: #0288d1; color: white; border: none; padding: 10px 15px; margin: 5px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 0.85rem; transition: 0.3s; }
+        
+        .btn-tab:hover { background: #01579b; transform: scale(1.1); }
+        
+        .ventana { display: none; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-top: 15px; animation: fadeIn 0.4s ease-in-out; max-width: 500px; width: 90%; text-align: center; box-sizing: border-radius; }
+        
+        .visible { display: block !important; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .frasco-wrapper { background: #ffffff99; border: 4px solid #0288d1; border-radius: 20px 20px 80px 80px; width: 260px; min-height: 220px; margin: 20px auto; padding: 20px; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; }
+        
+        .emoji-click { font-size: 1.8rem; cursor: pointer; margin: 6px; transition: transform 0.2s; user-select: none; }
+        
+        .emoji-click:hover { transform: scale(1.4) rotate(15deg); }
+        
+        .mensaje-display { font-weight: bold; color: #d81b60; margin-top: 20px; min-height: 60px; padding: 15px; border-top: 1px dashed #0288d1; display: flex; align-items: center; justify-content: center; transition: opacity 0.3s; }
+        
+        .polaroid { background: white; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.15); margin-bottom: 25px; }
+        
+        .polaroid img { width: 100%; height: auto; border: 1px solid #eee; border-radius: 5px; }
+        
+        .polaroid p { font-family: 'Courier New', monospace; font-weight: bold; margin-top: 15px; color: #555; font-size: 0.9rem; }
+        
+        ol { text-align: left; background: #f1f8ff; padding: 25px 40px; border-radius: 20px; line-height: 1.6; }
 
-        .bar {
-            position: absolute;
-            bottom: 30px;
-            width: 85%;
-            max-width: 380px;
-            display: flex;
-            background: rgba(15, 5, 25, 0.7);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            border-radius: 60px;
-            padding: 6px 6px 6px 20px;
-            backdrop-filter: blur(10px);
-            z-index: 10;
-        }
+        .controles-album { margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+        .btn-foto { background: #f1f8ff; color: #0288d1; border: 2px solid #0288d1; padding: 8px 12px; border-radius: 50%; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-foto:hover, .btn-foto.activo { background: #0288d1; color: white; transform: scale(1.1); }
+        #visor-album { max-width: 350px; margin: 20px auto; opacity: 1; transition: opacity 0.3s ease-in-out; }
 
-        input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #f0abff;
-            outline: none;
-        }
-
-        button {
-            background: #7e22ce;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.8rem;
-        }
-
-        canvas { display: block; filter: blur(3px); }
+        #container-canvas { background: black; border-radius: 20px; overflow: hidden; position: relative; height: 350px; margin-top: 10px; }
+        canvas { display: block; cursor: grab; }
+        canvas:active { cursor: grabbing; }
     </style>
 </head>
 <body>
 
-    <canvas id="galaxyCanvas"></canvas>
+    <h1>Nuestro Espacio ❤️</h1>
+    
+    <div class="tabs">
+        <button class="btn-tab" onclick="abrir('inicio')">Inicio</button>
+        <button class="btn-tab" onclick="abrir('recordatorio')">Lo que vales</button>
+        <button class="btn-tab" onclick="abrir('frasco-amor')">Frasco de Amor</button>
+        <button class="btn-tab" onclick="abrir('por-nosotros')">Por nosotros</button>
+        <button class="btn-tab" onclick="abrir('corazon-3d')">Corazón 3D</button>
+        <button class="btn-tab" onclick="abrir('album')">Nuestro Álbum 📸</button>
+    </div>
+
+    <div id="inicio" class="ventana visible">
+        <h4><u><em>¡para mi personita mas importante !</em></u></h4>
+        <p style="color: #000080;"> hola bb, nomas paso para avisarte que en este momento te estoy pensando, como lo hago en cada momento del dia y a cada hora.😊</p>
+        <P style="color: #000080;"> me haces muy feliz aunque sea media terca y loquita me gusta estar contigo aunque aveces nos perdemos en la rutina del dia al dia me gusta saber que estas ahi conmigo y que en cualquier momento puedo darte un beso o un abrazo para sentirme bien. </P>
+        <p style="color: #000080;"> no tenes idea de lo mucho que te amo y valoro que estes en mi vida aunque no lo creas eres el mejor novio que pude aver tenido y tengo suerte de que te hayas cruzado en mi camino </p>
+        <h3 style="color: #3366ff;"> te amo mi negrito</h3>
+        <p style="color: #000080;">en cada pestañas encuentras una sorpresas.</p>
+    </div>
+
+    <div id="recordatorio" class="ventana">
+        <h3>Pequeño recordatorio de lo que vales</h3>
+        <h2 style="color: #000080; font-size: 1.1rem; background: #f1f8ff; padding: 15px; border-radius: 10px;">gracias por tus regalos me encanta estar con huguito acostada aunque ya no tenga tu perfume los anillos, las cartas que haces con esfuerzo, el collar, las salidas, las flores, y las muchas cosas que venis haciendo.</h2>
+        <p style="color: #d81b60; font-weight: bold; font-size: 1.1rem; margin: 15px 0;"> -eres muy atento y cariñoso, siempre te preocupas y me cuidas</p>
+        <p style="color: #d81b60; font-weight: bold; font-size: 1.1rem; margin: 15px 0;"> -eres muy colgado y olvidon jajaj voy a tener que regañarte muchas veces por eso ;)</p>
+        <p style="color: #000080; font-style: italic;">eres muy especial para mi, mi tesoro, mi futuro esposo y futuro papi </p>
+        <h5 style="color: #3366ff; font-size: 1.2rem; margin-top: 10px;">TE AMO MUCHO BB</h5>
+    </div>
+
+    <div id="frasco-amor" class="ventana">
+        <h3>Frasco de Mensajes</h3>
+        <p>Toca un corazón para sacar un pensamiento:</p>
+        <div class="frasco-wrapper">
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💖</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💝</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💗</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💓</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💘</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💕</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💖</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💝</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💗</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💓</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💘</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💕</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💖</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💝</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💗</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💓</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-amor', frasesAmor)">💘</span>
+        </div>
+        <div id="msg-amor" class="mensaje-display">¿Qué dirá hoy?</div>
+    </div>
+
+    <div id="por-nosotros" class="ventana">
+        <h3>Por nosotros ✨</h3>
+        <p>Toca un emoji para ver un deseo:</p>
+        <div class="frasco-wrapper">
+            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🌟</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🍭</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🎬</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🍯</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🎨</span>
+            <span class="emoji-click" onclick="mostrarMensaje('msg-nos', frasesNosotros)">🎤</span>
+        </div>
+        <div id="msg-nos" class="mensaje-display">¿Qué saldrá?</div>
+    </div>
+
+    <div id="corazon-3d" class="ventana">
+        <h3>Te Amo ❤️</h3>
+        <p>Mantenlo presionado para girarlo</p>
+        <div id="container-canvas">
+            <canvas id="heartCanvas"></canvas>
+        </div>
+    </div>
+
+    <div id="album" class="ventana">
+        <h3>Nuestro Álbum Interactivo 📸</h3>
+        <div id="visor-album" class="polaroid">
+            <img id="foto-actual" src="https://i.postimg.cc/7ZnRD4cG/IMG-20251010-WA0052.jpg" alt="Nuestra foto">
+            <p id="texto-actual">me encanta pensar que pronto sere tu esposa ✨</p>
+        </div>
+        <div class="controles-album">
+            <button class="btn-foto activo" onclick="cambiarFoto(0, this)">1</button>
+            <button class="btn-foto" onclick="cambiarFoto(1, this)">2</button>
+            <button class="btn-foto" onclick="cambiarFoto(2, this)">3</button>
+            <button class="btn-foto" onclick="cambiarFoto(3, this)">4</button>
+            <button class="btn-foto" onclick="cambiarFoto(4, this)">5</button>
+            <button class="btn-foto" onclick="cambiarFoto(5, this)">6</button>
+            <button class="btn-foto" onclick="cambiarFoto(6, this)">7</button>
+        </div>
+    </div>
 
     <script>
-        const canvas = document.getElementById('galaxyCanvas');
-        const ctx = canvas.getContext('2d');
-        let width, height, clouds = [];
-
-        function init() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            createSoftGalaxy();
+        // --- LÓGICA DE PESTAÑAS ---
+        function abrir(id) {
+            // Ocultar todas las ventanas
+            document.querySelectorAll('.ventana').forEach(v => v.classList.remove('visible'));
+            // Mostrar la ventana seleccionada
+            const ventana = document.getElementById(id);
+            if (ventana) {
+                ventana.classList.add('visible');
+            }
+            // Ajustar canvas si se abre la pestaña del corazón
+            if(id === 'corazon-3d') {
+                resizeCanvas();
+            }
         }
 
-        class NebulaCloud {
-            constructor() {
-                this.reset();
+        // --- MENSAJES ALEATORIOS ---
+        const frasesAmor = [
+            "Vale por un beso interminable. 💋", "Gracias por hacerme tan feliz cada día. ✨",
+            "Eres mi persona favorita en el mundo entero. 🌎", "Amo cada pequeño detalle de ti. ❤️",
+            "¡Eres el mejor regalo que me dio la vida! 🎁", "Sos la personita más dulce que conozco. 🍭",
+            "Amo cuando me miras y sonreís. 😊", "Vale por una tarde de mimos sin fin. 🐾",
+            "Sos mi refugio favorito. 🏠", "Gracias por tenerme tanta paciencia. 💕",
+            "Me encanta cómo me hacés sentir. 💖", "Sos mucho más de lo que alguna vez soñé. ✨",
+            "Te amo hoy, mañana y siempre. 🌹"
+        ];
+
+        const frasesNosotros = [
+            "vale por un secreto", "vale por unos masajes", "me gustan tus ojitos",
+            "amo tus destalles", "gracias por hacerme sentir amada cada dia", "hacemos postrecito",
+            "me gusta rascarme con tu bigote", "dibujar juntos", "cantar solos",
+            "ver una peli", "te extraño todos los dias", "me haces muuuuuuuy feliz"
+        ];
+
+        function mostrarMensaje(id, lista) {
+            const display = document.getElementById(id);
+            if (display) {
+                display.style.opacity = 0;
+                setTimeout(() => {
+                    display.innerText = lista[Math.floor(Math.random() * lista.length)];
+                    display.style.opacity = 1;
+                }, 150);
             }
+        }
 
-            reset() {
-                this.x = width / 2;
-                this.y = height / 2;
-                this.size = Math.random() * 80 + 40;
-                this.angle = Math.random() * Math.PI * 2;
-                this.speed = Math.random() * 0.01 + 0.003;
-                this.dist = Math.random() * 120;
-                // Colores galácticos suaves
-                const colors = ['rgba(147, 51, 234, 0.12)', 'rgba(59, 130, 246, 0.12)', 'rgba(236, 72, 153, 0.12)'];
-                this.color = colors[Math.floor(Math.random() * colors.length)];
+        // --- ÁLBUM INTERACTIVO ---
+        const fotosAlbum = [
+            { url: "https://i.postimg.cc/7ZnRD4cG/IMG-20251010-WA0052.jpg", texto: "¡me encanta pensar que pronto sere tu esposa! ✨" },
+            { url: "https://i.postimg.cc/k40sKYzJ/IMG_20251022_WA0036.jpg", texto: "me gusta esta foto con nuestra hija 🤗" },
+            { url: "https://i.postimg.cc/DwwrJK0G/IMG_20260110_WA0017.jpg", texto: "tus abrazos lo son todoo... 7w7 💋" },
+            { url: "https://i.postimg.cc/Y2GmwT1s/Captura-de-pantalla-2026-03-18-141804.png", texto: "Te extraño todos los días, mi vida. 💖" },
+            { url: "https://i.postimg.cc/Vkkqrcvb/IMG_20251212_WA0107.jpg", texto: "Gracias por cada paseo.💎" },
+            { url: "https://i.postimg.cc/cLLRgNCv/IMG_20251002_WA0074.jpg", texto: "los dias son mas lindos con vos.☀️" },
+            { url: "https://i.postimg.cc/Ghh8zxRw/IMG-20260312-WA0167(1).jpg", texto: "jaja como me miras es tan dulce.🥞🍰" }
+        ];
+
+        function cambiarFoto(indice, boton) {
+            const visor = document.getElementById('visor-album');
+            const imgActual = document.getElementById('foto-actual');
+            const txtActual = document.getElementById('texto-actual');
+            
+            if (visor && imgActual && txtActual) {
+                visor.style.opacity = 0;
+                setTimeout(() => {
+                    imgActual.src = fotosAlbum[indice].url;
+                    txtActual.innerText = fotosAlbum[indice].texto;
+                    visor.style.opacity = 1;
+                    // Actualizar estado de botones
+                    document.querySelectorAll('.btn-foto').forEach(b => b.classList.remove('activo'));
+                    boton.classList.add('activo');
+                }, 300);
             }
+        }
 
-            update() {
-                this.angle += this.speed;
-                this.currentX = this.x + Math.cos(this.angle) * this.dist;
-                this.currentY = this.y + Math.sin(this.angle) * this.dist;
+        // --- LÓGICA CORAZÓN 3D (CANVAS) ---
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+        const textoC = "te amo";
+        const colorC = "#FF69B4"; 
+        const cantidadC = 380;
+        let width, height;
+        let mouseX = 0, mouseY = 0, pMouseX = 0, pMouseY = 0;
+        let rotX = 0, rotY = 0;
+        let isMoving = false;
+
+        function resizeCanvas() {
+            const container = document.getElementById('container-canvas');
+            if (container) {
+                width = canvas.width = container.offsetWidth;
+                height = canvas.height = container.offsetHeight;
             }
+        }
 
-            draw() {
-                const gradient = ctx.createRadialGradient(
-                    this.currentX, this.currentY, 0,
-                    this.currentX, this.currentY, this.size
-                );
-                gradient.addColorStop(0, this.color);
-                gradient.addColorStop(1, 'transparent');
+        // Generar puntos del corazón
+        const puntos = [];
+        for (let i = 0; i < cantidadC; i++) {
+            const t = Math.PI * 2 * (i / cantidadC);
+            const phi = Math.acos(2 * Math.random() - 1);
+            const x2d = 16 * Math.pow(Math.sin(t), 3);
+            const y2d = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+            const x = x2d * Math.sin(phi);
+            const y = y2d * Math.sin(phi);
+            const z = x2d * Math.cos(phi) * 1.5;
+            puntos.push({ x, y, z });
+        }
 
-                ctx.fillStyle = gradient;
-                // 'screen' hace que los colores se sumen
+        function draw() {
+            // Limpiar canvas
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, width, height);
+
+            // Actualizar rotación
+            if (!isMoving) {
+                rotY += 0.015; // Giro automático suave
+            } else {
+                rotY += (mouseX - pMouseX) * 0.01;
+                rotX += (mouseY - pMouseY) * 0.01;
+            }
+            pMouseX = mouseX;
+            pMouseY = mouseY;
+
+            // Proyectar y ordenar puntos
+            const renderList = puntos.map(p => {
+                let x1 = p.x * Math.cos(rotY) + p.z * Math.sin(rotY);
+                let z1 = -p.x * Math.sin(rotY) + p.z * Math.cos(rotY);
+                let y1 = p.y * Math.cos(rotX) - z1 * Math.sin
+                
