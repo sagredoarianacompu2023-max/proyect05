@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Sistema de Recuerdos ✨</title>
+    <title>Sistema de Recuerdos 3D con Sol Grande ✨</title>
     <style>
         body {
             margin: 0;
@@ -34,25 +34,23 @@
         let isDragging = false;
         let lastMouseX, lastMouseY;
 
-        // --- TU LISTA DE 14 FOTOS PNG ---
+        // --- TU LISTA ACTUALIZADA DE 11 FOTOS PNG ÚNICAS ---
         const imageSources = [
-            "https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png",
-"https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png",
-"https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png",
-"https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png",
-"https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png",
-"https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png",
-"https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png",
-"https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png",
-"https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png",
-"https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png",
-"https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png",
-           
-           
+            'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png',
+            'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png',
+            'https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png',
+            'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png',
+            'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png',
+            'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png',
+            'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png',
+            'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png',
+            'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png',
+            'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png',
+            'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png'
         ];
 
         // Cargar todas las imágenes
-        let imagesLoadedCount = 1;
+        let imagesLoadedCount = 0;
         function loadImages(callback) {
             imageSources.forEach(src => {
                 const img = new Image();
@@ -169,16 +167,16 @@
                 drawOrbit(p.dist, p.zOffset);
             });
 
-            // Sol / Núcleo central
+            // Sol / Núcleo central - ¡AHORA MÁS GRANDE!
             const n = rotate3D(0, 0, 0);
-            const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 65 * n.scale);
+            const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 100 * n.scale); // Aumentado el radio del gradiente
             grad.addColorStop(0, '#fff');
             grad.addColorStop(0.2, '#fff9c4');
             grad.addColorStop(0.5, 'rgba(255, 200, 50, 0.35)');
             grad.addColorStop(1, 'transparent');
             ctx.fillStyle = grad;
             ctx.beginPath();
-            ctx.arc(n.x, n.y, 90 * n.scale, 0, Math.PI * 2);
+            ctx.arc(n.x, n.y, 130 * n.scale, 0, Math.PI * 2); // Aumentado el radio del círculo dibujado
             ctx.fill();
 
             // Preparar objetos para renderizar con Z-sorting
