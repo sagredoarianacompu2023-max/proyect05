@@ -3,20 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Recuerdos 3D con Sol Grande ✨</title>
+    <title> mi espacio 🌌</title>
     <style>
-        body {
-            margin: 0;
-            background-color: #020105;
-            overflow: hidden;
-            touch-action: none;
-        }
+        body { margin: 0; background-color: #020105; overflow: hidden; touch-action: none; }
         canvas { display: block; cursor: grab; }
         canvas:active { cursor: grabbing; }
     </style>
 </head>
 <body>
-
     <canvas id="galaxyCanvas"></canvas>
 
     <script>
@@ -34,7 +28,7 @@
         let isDragging = false;
         let lastMouseX, lastMouseY;
 
-        // --- TU LISTA ACTUALIZADA DE 11 FOTOS PNG ÚNICAS ---
+        // --- LISTA DE TUS 11 IMÁGENES ÚNICAS ---
         const imageSources = [
             'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png',
             'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png',
@@ -49,26 +43,21 @@
             'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png'
         ];
 
-        // Cargar todas las imágenes
-        let imagesLoadedCount = 0;
         function loadImages(callback) {
-            imageSources.forEach(src => {
+            let loadedCount = 0;
+            imageSources.forEach((src, index) => {
                 const img = new Image();
                 img.src = src;
                 img.onload = () => {
-                    imagesLoadedCount++;
-                    if (imagesLoadedCount === imageSources.length) {
-                        callback();
-                    }
+                    loadedCount++;
+                    if (loadedCount === imageSources.length) callback();
                 };
                 img.onerror = () => {
-                    console.error("Error cargando imagen:", src);
-                    imagesLoadedCount++; // Contar igual para no bloquear
-                    if (imagesLoadedCount === imageSources.length) {
-                        callback();
-                    }
+                    loadedCount++;
+                    if (loadedCount === imageSources.length) callback();
                 };
-                loadedImages.push(img);
+                // Guardamos la imagen en la posición exacta del array
+                loadedImages[index] = img;
             });
         }
 
@@ -76,7 +65,6 @@
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             
-            // Estrellas de fondo
             staticStars = [];
             for (let i = 0; i < numStars; i++) {
                 staticStars.push({
@@ -87,61 +75,43 @@
                 });
             }
 
-            // Crear objetos con órbitas y asignar imágenes aleatorias
             planetObjects = [];
-            // Usamos la cantidad de imágenes cargadas correctamente como número de "planetas"
-            const totalObjects = loadedImages.filter(img => img.complete && img.naturalWidth !== 0).length;
+            // Filtramos solo las imágenes que cargaron bien
+            const validImages = loadedImages.filter(img => img && img.complete && img.naturalWidth !== 0);
             
-            for (let i = 0; i < totalObjects; i++) {
-                // Seleccionar imagen aleatoria de las cargadas
-                const randomImg = loadedImages[Math.floor(Math.random() * loadedImages.length)];
-                
+            // Creamos un planeta por cada imagen única (SIN REPETIR)
+            validImages.forEach((image, i) => {
                 planetObjects.push({
-                    dist: 130 + i * 40, // Distancias escalonadas
-                    orbitAngle: Math.random() * Math.PI * 2,
-                    speed: 0.01 / (1 + i * 0.3), // Velocidad según distancia
-                    size: 70 + Math.random() * 20, 
-                    zOffset: (Math.random() - 0.5) * 80,
-                    img: randomImg
+                    dist: 160 + i * 50, // Órbitas bien separadas
+                    orbitAngle: (i * (Math.PI * 2 / validImages.length)), // Distribución inicial pareja
+                    speed: 0.008 / (1 + i * 0.2), 
+                    size: 80, 
+                    zOffset: (Math.random() - 0.5) * 60,
+                    img: image // Asignación directa de la imagen única
                 });
-            }
+            });
         }
 
         function rotate3D(x, y, z) {
             let cosY = Math.cos(angleY), sinY = Math.sin(angleY);
             let x1 = x * cosY - z * sinY;
             let z1 = x * sinY + z * cosY;
-
             let cosX = Math.cos(angleX), sinX = Math.sin(angleX);
             let y1 = y * cosX - z1 * sinX;
             let z2 = y * sinX + z1 * cosX;
-
-            const focal = 500;
+            const focal = 600;
             const scale = focal / (focal + z2);
-            return {
-                x: x1 * scale + width / 2,
-                y: y1 * scale + height / 2,
-                scale: scale,
-                z: z2
-            };
+            return { x: x1 * scale + width / 2, y: y1 * scale + height / 2, scale: scale, z: z2 };
         }
 
-        // --- FUNCIÓN PARA DIBUJAR ÓRBITAS IMAGINARIAS ---
         function drawOrbit(dist, zOffset) {
             ctx.beginPath();
-            ctx.strokeStyle = "rgba(100, 255, 255, 0.15)"; // Cian tenue y transparente
+            ctx.strokeStyle = "rgba(100, 255, 255, 0.1)";
             ctx.lineWidth = 1;
-            
-            // Dibujar la elipse de la órbita proyectada en 3D
-            for (let angle = 0; angle <= Math.PI * 2; angle += 0.05) {
-                let x = Math.cos(angle) * dist;
-                let z = Math.sin(angle) * dist;
-                const p = rotate3D(x, zOffset, z);
-                if (angle === 0) {
-                    ctx.moveTo(p.x, p.y);
-                } else {
-                    ctx.lineTo(p.x, p.y);
-                }
+            for (let a = 0; a <= Math.PI * 2; a += 0.1) {
+                const p = rotate3D(Math.cos(a) * dist, zOffset, Math.sin(a) * dist);
+                if (a === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
             }
             ctx.closePath();
             ctx.stroke();
@@ -151,89 +121,9 @@
             ctx.fillStyle = '#020105';
             ctx.fillRect(0, 0, width, height);
 
-            // Estrellas estáticas
             staticStars.forEach(s => {
                 ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fill();
             });
 
-            angleX += (targetAngleX - angleX) * 0.08;
-            angleY += (targetAngleY - angleY) * 0.08;
-
-            // Dibujar primero todas las órbitas (para que queden detrás de los objetos)
-            planetObjects.forEach(p => {
-                drawOrbit(p.dist, p.zOffset);
-            });
-
-            // Sol / Núcleo central - ¡AHORA MÁS GRANDE!
-            const n = rotate3D(0, 0, 0);
-            const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 100 * n.scale); // Aumentado el radio del gradiente
-            grad.addColorStop(0, '#fff');
-            grad.addColorStop(0.2, '#fff9c4');
-            grad.addColorStop(0.5, 'rgba(255, 200, 50, 0.35)');
-            grad.addColorStop(1, 'transparent');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(n.x, n.y, 130 * n.scale, 0, Math.PI * 2); // Aumentado el radio del círculo dibujado
-            ctx.fill();
-
-            // Preparar objetos para renderizar con Z-sorting
-            const rendered = planetObjects.map(p => {
-                p.orbitAngle += p.speed;
-                let x = Math.cos(p.orbitAngle) * p.dist;
-                let z = Math.sin(p.orbitAngle) * p.dist;
-                return { ...rotate3D(x, p.zOffset, z), size: p.size, img: p.img };
-            });
-
-            // Ordenar por profundidad Z
-            rendered.sort((a, b) => b.z - a.z);
-
-            // Dibujar objetos con fotos
-            rendered.forEach(p => {
-                const s = p.size * p.scale;
-                if (p.img.complete && p.img.naturalWidth !== 0) {
-                    ctx.save();
-                    ctx.shadowBlur = 12 * p.scale;
-                    ctx.shadowColor = "rgba(100, 200, 255, 0.4)";
-                    ctx.drawImage(p.img, p.x - s/2, p.y - s/2, s, s);
-                    ctx.restore();
-                } else {
-                    // Marcador si la imagen falla
-                    ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, s/2.5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            });
-
-            requestAnimationFrame(draw);
-        }
-
-        // --- Controles táctiles y mouse ---
-        const start = (x, y) => { isDragging = true; lastMouseX = x; lastMouseY = y; };
-        const move = (x, y) => {
-            if (!isDragging) return;
-            targetAngleY += (x - lastMouseX) * 0.007;
-            targetAngleX -= (y - lastMouseY) * 0.007;
-            lastMouseX = x; lastMouseY = y;
-        };
-
-        window.addEventListener('mousedown', e => start(e.clientX, e.clientY));
-        window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
-        window.addEventListener('mouseup', () => isDragging = false);
-        window.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY));
-        window.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
-        window.addEventListener('touchend', () => isDragging = false);
-
-        // Iniciar después de cargar las imágenes
-        loadImages(() => {
-            init();
-            draw();
-        });
-        
-        window.addEventListener('resize', init);
-    </script>
-</body>
-</html>
+            angleX += (targetAngleX - angleX) * 0.0
