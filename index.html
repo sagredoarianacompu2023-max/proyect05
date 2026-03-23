@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxia 3D ✨</title>
+    <title>Vuelo Espacial de Recuerdos ✨</title>
     <style>
-        body { margin: 0; background-color: #020105; overflow: hidden; touch-action: none; font-family: sans-serif; }
-        canvas { display: block; cursor: grab; }
+        body { margin: 0; background-color: #010005; overflow: hidden; touch-action: none; font-family: sans-serif; }
+        canvas { display: block; cursor: move; }
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
         #popup { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -22,7 +22,7 @@
     <div id="popup">
         <h2 id="pTitle" style="color:#7e22ce">Recuerdo</h2>
         <p id="pText" style="color:#444"></p>
-        <button id="closeBtn">Cerrar</button>
+        <button id="closeBtn">Continuar Vuelo</button>
     </div>
 
     <canvas id="galaxyCanvas"></canvas>
@@ -52,87 +52,113 @@
         function init() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
+            
             staticStars = [];
-            for (let i = 0; i < 300; i++) {
-                staticStars.push({ x: Math.random()*width, y: Math.random()*height, sz: Math.random()*1.5, op: Math.random() });
+            for (let i = 0; i < 400; i++) {
+                staticStars.push({
+                    x: (Math.random() - 0.5) * 3000,
+                    y: (Math.random() - 0.5) * 3000,
+                    z: Math.random() * 2000,
+                    sz: Math.random() * 2
+                });
             }
 
             planetObjects = [];
             photoData.forEach((data, i) => {
                 const img = new Image();
-                img.crossOrigin = "anonymous"; // Ayuda con problemas de carga externa
                 img.src = data.src;
-                
                 planetObjects.push({
-                    dist: 180 + i * 50,
-                    angle: (i * (Math.PI * 2 / photoData.length)),
-                    speed: 0.005 / (1 + i * 0.1),
-                    size: 90, 
-                    zOff: (Math.random() - 0.5) * 60,
-                    img: img, tag: data.tag, msg: data.msg, lastPos: null
+                    x: (Math.random() - 0.5) * 1500,
+                    y: (Math.random() - 0.5) * 1000,
+                    z: i * (2000 / photoData.length), // Distribuidos en profundidad
+                    speed: 4 + Math.random() * 2,
+                    img: img, tag: data.tag, msg: data.msg, 
+                    size: 120, lastPos: null
                 });
             });
         }
 
-        function rotate3D(x, y, z) {
-            let cY = Math.cos(angleY), sY = Math.sin(angleY);
-            let x1 = x * cY - z * sY, z1 = x * sY + z * cY;
-            let cX = Math.cos(angleX), sX = Math.sin(angleX);
-            let y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
-            const f = 600; const s = f / (f + z2);
-            return { x: x1 * s + width / 2, y: y1 * s + height / 2, s: s, z: z2 };
+        function project(x, y, z) {
+            // Rotación de cámara
+            let cosX = Math.cos(angleX), sinX = Math.sin(angleX);
+            let cosY = Math.cos(angleY), sinY = Math.sin(angleY);
+
+            let ty = y * cosX - z * sinX;
+            let tz = y * sinX + z * cosX;
+            let tx = x * cosY - tz * sinY;
+            tz = x * sinY + tz * cosY;
+
+            const focalLength = 400;
+            const scale = focalLength / (focalLength + tz);
+            return {
+                x: tx * scale + width / 2,
+                y: ty * scale + height / 2,
+                scale: scale,
+                z: tz
+            };
         }
 
         function draw() {
             if(isPaused) return;
-            ctx.fillStyle = '#020105'; ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = '#010005';
+            ctx.fillRect(0, 0, width, height);
 
+            angleX += (targetAngleX - angleX) * 0.05;
+            angleY += (targetAngleY - angleY) * 0.05;
+
+            // Estrellas en movimiento (Efecto túnel)
+            ctx.fillStyle = "white";
             staticStars.forEach(s => {
-                ctx.fillStyle = `rgba(255,255,255,${s.op})`;
-                ctx.beginPath(); ctx.arc(s.x, s.y, s.sz, 0, Math.PI*2); ctx.fill();
+                s.z -= 10; // Velocidad de las estrellas
+                if (s.z < -400) s.z = 2000;
+                let p = project(s.x, s.y, s.z);
+                if (p.scale > 0) {
+                    ctx.globalAlpha = Math.min(1, p.scale);
+                    ctx.beginPath(); ctx.arc(p.x, p.y, s.sz * p.scale, 0, Math.PI*2); ctx.fill();
+                }
+            });
+            ctx.globalAlpha = 1;
+
+            // Actualizar planetas y ordenar por profundidad
+            planetObjects.forEach(p => {
+                p.z -= p.speed;
+                if (p.z < -400) { // Reiniciar al fondo cuando nos pasan
+                    p.z = 2000;
+                    p.x = (Math.random() - 0.5) * 1500;
+                    p.y = (Math.random() - 0.5) * 1000;
+                }
             });
 
-            angleX += (targetAngleX - angleX) * 0.1;
-            angleY += (targetAngleY - angleY) * 0.1;
-
-            // Sol Central
-            const n = rotate3D(0, 0, 0);
-            const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 110 * n.s);
-            g.addColorStop(0, '#fff'); g.addColorStop(0.2, '#ffeb3b'); g.addColorStop(1, 'transparent');
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(n.x, n.y, 160 * n.s, 0, Math.PI*2); ctx.fill();
-
-            // Órbitas y Planetas
-            const rendered = planetObjects.map(p => {
-                p.angle += p.speed;
-                const pos = rotate3D(Math.cos(p.angle)*p.dist, p.zOff, Math.sin(p.angle)*p.dist);
-                p.lastPos = pos;
-                return { data: p, pos: pos };
-            });
-
-            rendered.sort((a,b) => b.pos.z - a.pos.z);
+            const rendered = planetObjects
+                .map(p => ({ data: p, pos: project(p.x, p.y, p.z) }))
+                .filter(r => r.pos.scale > 0)
+                .sort((a, b) => b.pos.z - a.pos.z);
 
             rendered.forEach(r => {
                 const p = r.data;
                 const pos = r.pos;
-                const s = p.size * pos.s;
-
-                // Dibujar Órbita tenue
-                ctx.beginPath(); ctx.strokeStyle = "rgba(100, 255, 255, 0.05)";
-                ctx.arc(n.x, n.y, p.dist * pos.s, 0, Math.PI*2); // Simplificada para fluidez
-                ctx.stroke();
+                const s = p.size * pos.scale;
+                p.lastPos = pos;
 
                 ctx.save();
                 ctx.translate(pos.x, pos.y);
-                if (p.img.complete && p.img.naturalWidth !== 0) {
-                    ctx.shadowBlur = 10 * pos.s; ctx.shadowColor = "rgba(168, 85, 247, 0.4)";
+                
+                if (p.img.complete) {
+                    // Brillo y Foto
+                    ctx.shadowBlur = 20 * pos.scale;
+                    ctx.shadowColor = "rgba(168, 85, 247, 0.5)";
+                    ctx.globalAlpha = Math.min(1, pos.scale * 1.5);
                     ctx.drawImage(p.img, -s/2, -s/2, s, s);
                     
                     // Texto
-                    ctx.shadowBlur = 0; ctx.fillStyle = "white";
-                    ctx.font = `bold ${12 * pos.s}px sans-serif`;
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = "white";
+                    ctx.font = `bold ${14 * pos.scale}px sans-serif`;
                     ctx.textAlign = "center";
-                    ctx.fillText(p.tag, 0, (s/2) + 10 * pos.s);
+                    ctx.strokeStyle = "black";
+                    ctx.lineWidth = 2 * pos.scale;
+                    ctx.strokeText(p.tag, 0, (s/2) + 15 * pos.scale);
+                    ctx.fillText(p.tag, 0, (s/2) + 15 * pos.scale);
                 }
                 ctx.restore();
             });
@@ -145,7 +171,7 @@
             for(let p of planetObjects) {
                 if(!p.lastPos) continue;
                 const d = Math.hypot(ex - p.lastPos.x, ey - p.lastPos.y);
-                if(d < 50 * p.lastPos.s) {
+                if(d < 60 * p.lastPos.scale) {
                     isPaused = true;
                     document.getElementById('pTitle').innerText = p.tag;
                     document.getElementById('pText').innerText = p.msg;
@@ -157,15 +183,25 @@
         }
 
         const start = (x, y) => { isDragging = true; lastX = x; lastY = y; };
-        const move = (x, y) => { if(!isDragging || isPaused) return; targetAngleY += (x - lastX) * 0.007; targetAngleX -= (y - lastY) * 0.007; lastX = x; lastY = y; };
+        const move = (x, y) => { 
+            if(!isDragging || isPaused) return; 
+            targetAngleY += (x - lastX) * 0.005; 
+            targetAngleX -= (y - lastY) * 0.005; 
+            lastX = x; lastY = y; 
+        };
 
         window.addEventListener('mousedown', e => start(e.clientX, e.clientY));
         window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
         window.addEventListener('mouseup', e => { isDragging = false; checkClick(e.clientX, e.clientY); });
-        
+        window.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY));
+        window.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
+        window.addEventListener('touchend', e => { isDragging = false; checkClick(lastX, lastY); });
+
         document.getElementById('closeBtn').onclick = () => {
-            isPaused = false; document.getElementById('overlay').style.display = 'none';
-            document.getElementById('popup').style.display = 'none'; draw();
+            isPaused = false; 
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('popup').style.display = 'none'; 
+            draw();
         };
 
         init(); draw();
