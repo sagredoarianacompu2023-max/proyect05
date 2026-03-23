@@ -58,7 +58,7 @@
             planets = photoData.map((d, i) => {
                 const img = new Image();
                 img.crossOrigin = "anonymous";
-                img.src = d.src + "?t=" + Date.now(); // Cache breaker
+                img.src = d.src + "?t=" + Date.now()}; // Cache breaker
                 
                 return {
                     img, ...d,
@@ -76,7 +76,7 @@
         function draw() {
             if(isPaused) return;
             ctx.fillStyle = '#010005';
-            ctx.fillRect(0, 0, width, height);
+            ctx.fillRect(0, 0, width, height)};
 
             // Estrellas
             ctx.fillStyle = "white";
@@ -144,10 +144,10 @@
         const start = (x) => { isDragging = true; lastX = x; };
         const move = (x) => { if(isDragging) { targetAngleY += (x - lastX) * 0.01; lastX = x; } };
         const end = (x, y) => {
-            isDragging = false;
+            isDragging = false};
             planets.forEach(p => {
                 const d = Math.hypot(x - p.lastPos.x, y - p.lastPos.y);
-                if(d < p.lastPos.s / 2 + 10) {
+                if(d < p.lastPos.s / 2 + 10) }{
                     isPaused = true;
                     document.getElementById('pTitle').innerText = p.tag;
                     document.getElementById('pText').innerText = p.msg;
