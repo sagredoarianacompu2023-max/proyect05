@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxia con Imagen 🌌</title>
+    <title>Galaxia 3D con Fotos ✨</title>
     <style>
         body {
             margin: 0;
@@ -26,26 +26,23 @@
         let width, height;
         let staticStars = [];
         let planetImages = [];
-        const numStars = 400; // Estrellas fijas al fondo
-        const numPlanets = 5; // Número de imágenes/planetas
+        const numStars = 400; 
+        const numPlanets = 5; 
 
-        // Variables de Cámara 3D
-        let angleX = 0;
-        let angleY = 0;
-        let targetAngleX = 0;
-        let targetAngleY = 0;
+        let angleX = 0, angleY = 0;
+        let targetAngleX = 0, targetAngleY = 0;
         let isDragging = false;
         let lastMouseX, lastMouseY;
 
-        // Cargar la imagen base (luego la cambias por tu .png)
+        // --- CONFIGURACIÓN DE TU IMAGEN ---
         const planeteImagen = new Image();
-        planeteImagen.src = 'https://i.postimg.cc/GhDmKCJJ/retouch-2026032018130123.png'; // URL de ejemplo, cámbiala luego
+        // Reemplaza este link por el tuyo. Si es un archivo local pon: 'tu_foto.png'
+        planeteImagen.src = 'https://i.postimg.cc/GhDmKCJJ/retouch-2026032018130123.png'; 
 
         function init() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             
-            // 1. Crear estrellas de fondo (ESTÁTICAS)
             staticStars = [];
             for (let i = 0; i < numStars; i++) {
                 staticStars.push({
@@ -56,39 +53,111 @@
                 });
             }
 
-            // 2. Crear objetos 3D con imagen
             planetImages = [];
             for (let i = 0; i < numPlanets; i++) {
                 planetImages.push({
-                    dist: 150 + i * 50, // Radio de órbita
+                    dist: 150 + i * 60, 
                     orbitAngle: Math.random() * Math.PI * 2,
-                    speed: 0.003 + (Math.random() * 0.008),
-                    size: 50 + Math.random() * 30, // Tamaño de la imagen
-                    // Coordenada Z para el 3D
-                    zOffset: (Math.random() - 0.5) * 120 
+                    speed: 0.002 + (Math.random() * 0.005),
+                    size: 80, 
+                    zOffset: (Math.random() - 0.5) * 150 
                 });
             }
         }
 
-        function project(x, y, z) {
-            // Proyección de perspectiva simple
-            const focalLength = 400;
-            const scale = focalLength / (focalLength + z);
-            return {
-                x: x * scale + width / 2,
-                y: y * scale + height / 2,
-                scale: scale
-            };
-        }
-
         function rotate3D(x, y, z) {
-            // Rotación en el eje Y (horizontal)
-            let cosY = Math.cos(angleY);
-            let sinY = Math.sin(angleY);
+            let cosY = Math.cos(angleY), sinY = Math.sin(angleY);
             let x1 = x * cosY - z * sinY;
             let z1 = x * sinY + z * cosY;
 
-            // Rotación en el eje X (vertical)
-            let cosX = Math.cos(angleX);
-            let sinX = Math.sin(angleX);
-            let y1 = y * cosX - z1
+            let cosX = Math.cos(angleX), sinX = Math.sin(angleX);
+            let y1 = y * cosX - z1 * sinX;
+            let z2 = y * sinX + z1 * cosX;
+
+            const focal = 400;
+            const scale = focal / (focal + z2);
+            return {
+                x: x1 * scale + width / 2,
+                y: y1 * scale + height / 2,
+                scale: scale,
+                z: z2
+            };
+        }
+
+        function draw() {
+            ctx.fillStyle = '#020105';
+            ctx.fillRect(0, 0, width, height);
+
+            // 1. Estrellas Estáticas
+            staticStars.forEach(s => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            angleX += (targetAngleX - angleX) * 0.1;
+            angleY += (targetAngleY - angleY) * 0.1;
+
+            // 2. Núcleo
+            const n = rotate3D(0, 0, 0);
+            const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 60 * n.scale);
+            grad.addColorStop(0, 'white');
+            grad.addColorStop(0.3, 'rgba(255, 255, 180, 0.6)');
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, 80 * n.scale, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 3. Imágenes
+            const rendered = planetImages.map(p => {
+                p.orbitAngle += p.speed;
+                let x = Math.cos(p.orbitAngle) * p.dist;
+                let z = Math.sin(p.orbitAngle) * p.dist;
+                return { ...rotate3D(x, p.zOffset, z), size: p.size };
+            });
+
+            rendered.sort((a, b) => b.z - a.z);
+
+            rendered.forEach(p => {
+                const s = p.size * p.scale;
+                if (planeteImagen.complete && planeteImagen.naturalWidth !== 0) {
+                    ctx.save();
+                    ctx.shadowBlur = 10 * p.scale;
+                    ctx.shadowColor = "rgba(168, 85, 247, 0.4)";
+                    ctx.drawImage(planeteImagen, p.x - s/2, p.y - s/2, s, s);
+                    ctx.restore();
+                } else {
+                    // Si la imagen falla o no carga, dibuja un círculo temporal para que no se vea vacío
+                    ctx.fillStyle = "rgba(168, 85, 247, 0.3)";
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, s/3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            requestAnimationFrame(draw);
+        }
+
+        const start = (x, y) => { isDragging = true; lastMouseX = x; lastMouseY = y; };
+        const move = (x, y) => {
+            if (!isDragging) return;
+            targetAngleY += (x - lastMouseX) * 0.01;
+            targetAngleX -= (y - lastMouseY) * 0.01;
+            lastMouseX = x; lastMouseY = y;
+        };
+
+        window.addEventListener('mousedown', e => start(e.clientX, e.clientY));
+        window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
+        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY));
+        window.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
+        window.addEventListener('touchend', () => isDragging = false);
+
+        init();
+        draw();
+        window.addEventListener('resize', init);
+    </script>
+</body>
+</html>
