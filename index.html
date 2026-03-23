@@ -14,22 +14,22 @@
     <canvas id="galaxyCanvas"></canvas>
 
     <script>
-        const canvas = document.getElementById('galaxyCanvas');
-        const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById('galaxyCanvas');
+  const ctx = canvas.getContext('2d');
         
-        let width, height;
+let width, height;
         let staticStars = [];
         let planetObjects = [];
         let loadedImages = [];
         const numStars = 450; 
 
-        let angleX = 0, angleY = 0;
+let angleX = 0, angleY = 0;
         let targetAngleX = 0, targetAngleY = 0;
         let isDragging = false;
         let lastMouseX, lastMouseY;
 
         // --- LISTA DE TUS 11 IMÁGENES ÚNICAS ---
-        const imageSources = [
+    const imageSources = [
             'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png',
             'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png',
             'https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png',
