@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Galaxia de Recuerdos ✨</title>
+    <title>Inmersión Galáctica de Recuerdos ✨</title>
     <style>
         body { margin: 0; background-color: #010005; overflow: hidden; touch-action: none; font-family: sans-serif; }
         canvas { display: block; background: #010005; }
@@ -11,21 +11,18 @@
         #popup { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: #fff; padding: 25px; border-radius: 20px; text-align: center; 
-            z-index: 1000; width: 85%; border: 2px solid #a855f7; box-shadow: 0 0 20px #a855f7;
+            z-index: 1000; width: 80%; border: 2px solid #a855f7;
         }
         #closeBtn { background: #7e22ce; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 15px; }
-        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; z-index: 2000; }
     </style>
 </head>
 <body>
-
-    <div id="loading">Cargando Galaxia...</div>
 
     <div id="overlay"></div>
     <div id="popup">
         <h2 id="pTitle" style="color:#7e22ce; margin:0">Recuerdo</h2>
         <p id="pText" style="color:#333; line-height:1.5"></p>
-        <button id="closeBtn">Volver</button>
+        <button id="closeBtn">Seguir Explorando</button>
     </div>
 
     <canvas id="galaxyCanvas"></canvas>
@@ -43,39 +40,38 @@
             { src: 'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png', tag: 'Mágico', msg: 'Lo que tenemos es único.' },
             { src: 'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png', tag: 'Cómplices', msg: 'Gracias por tu compañía.' },
             { src: 'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png', tag: 'Mi mundo', msg: 'Eres el centro de mi galaxia.' },
-            { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Donde sea, pero juntos.' },
+            { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Don de sea, pero juntos.' },
             { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Destino', msg: 'El universo nos unió.' },
             { src: 'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png', tag: 'Te quiero', msg: 'Sentimiento infinito.' },
             { src: 'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png', tag: 'Brillante', msg: 'Tu luz me guía siempre.' },
             { src: 'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png', tag: 'Para siempre', msg: 'Nuestra historia continúa.' }
         ];
 
-        let imagesLoaded = 0;
-
         function init() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            stars = Array.from({length: 100}, () => ({ x: Math.random()*width, y: Math.random()*height, s: Math.random()*2 }));
+            stars = Array.from({length: 200}, () => ({ x: Math.random()*width, y: Math.random()*height, s: Math.random()*2 }));
             
-            const baseDist = 160; 
-            const spacing = 70;   
-            
+            // --- CONFIGURACIÓN DE ÓRBITA INMERSIVA 360 ---
+            const orbitDist = 450; // Tú estás en el centro, los planetas están a 450px de distancia.
+            const totalSpeed = 0.005; // Velocidad de giro general.
+
             planets = photoData.map((d, i) => {
                 const img = new Image();
-                img.crossOrigin = "anonymous"; // CRÍTICO: Para evitar que el canvas se bloquee
-                img.onload = () => { 
-                    imagesLoaded++; 
-                    if(imagesLoaded >= 1) document.getElementById('loading').style.display = 'none';
-                };
-                img.src = d.src; 
+                img.crossOrigin = "anonymous";
+                img.src = d.src + "?t=" + new Date().getTime();
                 
+                // --- TAMAÑOS VARIADOS ---
+                // Generamos un tamaño aleatorio para cada uno (entre 80 y 160)
+                const randomSize = 80 + Math.random() * 80;
+
                 return {
                     img, ...d,
-                    angle: i * 0.5, 
-                    selfRotation: Math.random() * 5,
-                    dist: baseDist + (i * spacing), 
-                    speed: 0.003 - (i * 0.0001),    
-                    size: 90 + Math.random() * 60, 
+                    angle: i * (Math.PI * 2 / photoData.length), // Distribuidos en círculo.
+                    dist: orbitDist, 
+                    speed: totalSpeed,
+                    yOff: (Math.random() - 0.5) * 200, // Variación de altura.
+                    size: randomSize, 
                     lastPos: {x:0, y:0, s:0}
                 };
             });
@@ -89,62 +85,62 @@
             ctx.fillStyle = "white";
             stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
 
-            angleY += (targetAngleY - angleY) * 0.05;
+            angleY += (targetAngleY - angleY) * 0.1;
 
-            // SOL GIGANTE
-            const sunGrad = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, 110);
-            sunGrad.addColorStop(0, '#fff'); sunGrad.addColorStop(0.3, '#ffcc00'); sunGrad.addColorStop(1, 'transparent');
-            ctx.fillStyle = sunGrad;
-            ctx.beginPath(); ctx.arc(width/2, height/2, 160, 0, Math.PI*2); ctx.fill();
+            // Dibujar Órbita Celeste tenue (referencia de giro)
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(100, 255, 255, 0.08)";
+            ctx.arc(width/2, height/2, 450, 0, Math.PI*2);
+            ctx.stroke();
 
-            // Dibujar Planetas en Fila y con ZOOM cercano
+            // Dibujar Planetas
             planets.forEach(p => {
-                p.angle -= p.speed;
-                p.selfRotation += 0.01;
-
+                p.angle -= p.speed; // Giro constante.
+                
+                // Proyección inmersiva para que orbiten el punto de vista central.
                 const x3d = Math.cos(p.angle + angleY) * p.dist;
                 const z3d = Math.sin(p.angle + angleY) * p.dist;
                 
-                // ZOOM: Focal 300 para acercar mucho los planetas al frente
-                const scale = 300 / (300 + z3d);
+                const scale = 500 / (500 + z3d);
                 const x2d = x3d * scale + width / 2;
-                const y2d = (z3d * 0.3) * scale + height / 2; 
+                // Pequeña inclinación horizontal para que no giren en una línea perfecta.
+                const y2d = (z3d * 0.2) * scale + p.yOff + height / 2; 
                 const size = p.size * scale;
 
                 p.lastPos = { x: x2d, y: y2d, s: size };
 
-                // Dibujar solo si está en el rango visible
-                if (z3d < 250) {
-                    ctx.save();
-                    ctx.translate(x2d, y2d);
-                    ctx.rotate(p.selfRotation);
+                ctx.save();
+                ctx.translate(x2d, y2d);
 
-                    if (p.img.complete && p.img.naturalWidth !== 0) {
-                        ctx.shadowBlur = 15; ctx.shadowColor = "#a855f7";
-                        ctx.drawImage(p.img, -size/2, -size/2, size, size);
-                    } else {
-                        // Planeta de color si la imagen falla
-                        ctx.fillStyle = "#333";
-                        ctx.beginPath(); ctx.arc(0, 0, size/2, 0, Math.PI*2); ctx.fill();
-                    }
-                    ctx.restore();
-
-                    // Texto violeta fijo
-                    ctx.fillStyle = "#a855f7";
-                    ctx.font = `bold ${16 * scale}px sans-serif`;
-                    ctx.textAlign = "center";
-                    ctx.strokeStyle = "white"; ctx.lineWidth = 1;
-                    ctx.strokeText(p.tag, x2d, y2d + size/2 + 20);
-                    ctx.fillText(p.tag, x2d, y2d + size/2 + 20);
+                if (p.img.complete && p.img.naturalWidth !== 0) {
+                    // Si la imagen cargó, la dibuja con un aura sutil.
+                    ctx.shadowBlur = 15; ctx.shadowColor = "rgba(168, 85, 247, 0.4)";
+                    ctx.drawImage(p.img, -size/2, -size/2, size, size);
+                } else {
+                    // Círculo tenue mientras baja la foto.
+                    ctx.fillStyle = "#333";
+                    ctx.beginPath(); ctx.arc(0, 0, size/2, 0, Math.PI*2); ctx.fill();
                 }
+
+                // --- TEXTO BLANCO, GRANDE Y ELEGANTE ---
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = "white";
+                ctx.font = `bold ${18 * scale}px sans-serif`; // Tamaño de fuente mucho más grande.
+                ctx.textAlign = "center";
+                // Añadimos un sutil borde blanco para resaltar.
+                ctx.strokeStyle = "rgba(255,255,255,0.7)"; ctx.lineWidth = 1;
+                ctx.strokeText(p.tag, 0, size/2 + 20);
+                ctx.fillText(p.tag, 0, size/2 + 20);
+                
+                ctx.restore();
             });
 
             requestAnimationFrame(draw);
         }
 
-        const start = (x) => { isDragging = true; lastX = x; };
-        const move = (x) => { if(isDragging) { targetAngleY += (x - lastX) * 0.01; lastX = x; } };
-        const end = (x, y) => {
+        const handleStart = (x) => { isDragging = true; lastX = x; };
+        const handleMove = (x) => { if(isDragging) { targetAngleY += (x - lastX) * 0.01; lastX = x; } };
+        const handleEnd = (x, y) => {
             isDragging = false;
             planets.forEach(p => {
                 const d = Math.hypot(x - p.lastPos.x, y - p.lastPos.y);
@@ -158,19 +154,14 @@
             });
         };
 
-        window.addEventListener('mousedown', e => start(e.clientX));
-        window.addEventListener('mousemove', e => move(e.clientX));
-        window.addEventListener('mouseup', e => end(e.clientX, e.clientY));
-        window.addEventListener('touchstart', e => start(e.touches[0].clientX));
-        window.addEventListener('touchmove', e => move(e.touches[0].clientX));
-        window.addEventListener('touchend', e => end(lastX, height/2));
+        window.addEventListener('mousedown', e => handleStart(e.clientX));
+        window.addEventListener('mousemove', e => handleMove(e.clientX));
+        window.addEventListener('mouseup', e => handleEnd(e.clientX, e.clientY));
+        window.addEventListener('touchstart', e => handleStart(e.touches[0].clientX));
+        window.addEventListener('touchmove', e => handleMove(e.touches[0].clientX));
+        window.addEventListener('touchend', e => handleEnd(lastX, height/2));
 
-        document.getElementById('closeBtn').onclick = () => { 
-            isPaused = false; 
-            document.getElementById('overlay').style.display = 'none'; 
-            document.getElementById('popup').style.display = 'none'; 
-            draw(); 
-        };
+        document.getElementById('closeBtn').onclick = () => { isPaused = false; document.getElementById('overlay').style.display = 'none'; document.getElementById('popup').style.display = 'none'; draw(); };
 
         init(); draw();
         window.onresize = init;
