@@ -102,20 +102,6 @@
             ctx.closePath(); ctx.stroke();
         }
 
-        // Dibujo de Polaroid
-        function drawPolaroid(p, pos) {
-            const s = p.size * pos.s;
-            const pad = 8 * pos.s;
-            const btm = 25 * pos.s;
-            
-            ctx.save();
-            ctx.translate(pos.x, pos.y);
-            
-            // Marco Blanco
-            ctx.fillStyle = "white";
-            ctx.shadowBlur = 10 * pos.s; ctx.shadowColor = "rgba(255,255,255,0.2)";
-            ctx.fillRect(- (s+pad*2)/2, - (s+pad+btm)/2, s+pad*2, s+pad+btm);
-            
             // Foto
             if (p.img.complete) ctx.drawImage(p.img, -s/2, -(s+pad+btm)/2 + pad, s, s);
             
