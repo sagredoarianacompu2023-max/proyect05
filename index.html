@@ -3,29 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nuestra Galaxia ✨</title>
+    <title>Diorama Galáctico ✨</title>
     <style>
-        body { margin: 0; background-color: #010005; overflow: hidden; touch-action: none; font-family: 'Segoe UI', sans-serif; }
-        canvas { display: block; background: #010005; }
-        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; }
+        body { margin: 0; background-color: #010005; overflow: hidden; touch-action: none; font-family: sans-serif; }
+        canvas { display: block; background-color: #010005; }
+        
+        /* Cartel interactivo */
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
         #popup { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #fff; padding: 20px; border-radius: 20px; text-align: center; 
+            background: white; padding: 25px; border-radius: 20px; text-align: center; 
             z-index: 1000; width: 80%; box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
             border: 2px solid #a855f7;
         }
-        #pTitle { color: #7e22ce; margin-top: 0; font-size: 1.3rem; }
-        #pText { color: #333; line-height: 1.4; font-size: 1rem; }
-        #closeBtn { background: #7e22ce; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        #pTitle { color: #7e22ce; margin-top: 0; }
+        #closeBtn { background: #7e22ce; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 <body>
 
     <div id="overlay"></div>
     <div id="popup">
-        <h2 id="pTitle">Recuerdo Especial</h2>
-        <p id="pText">Cargando mensaje...</p>
-        <button id="closeBtn">Volver a la Galaxia</button>
+        <h2 id="pTitle">Recuerdo</h2>
+        <p id="pText" style="color:#333"></p>
+        <button id="closeBtn">Cerrar</button>
     </div>
 
     <canvas id="galaxyCanvas"></canvas>
@@ -33,9 +34,8 @@
     <script>
         const canvas = document.getElementById('galaxyCanvas');
         const ctx = canvas.getContext('2d');
-        
         let width, height, staticStars = [], planetObjects = [];
-        let angleX = 0, angleY = 0, targetAngleX = 0, targetAngleY = 0;
+        let angleX = 0.3, angleY = 0; // Inclinación leve para ver las órbitas como en tu foto
         let isDragging = false, isPaused = false, lastX, lastY;
 
         const photoData = [
@@ -46,7 +46,7 @@
             { src: 'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png', tag: 'Cómplices', msg: 'Gracias por tu compañía.' },
             { src: 'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png', tag: 'Mi mundo', msg: 'Eres el centro de mi galaxia.' },
             { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Donde sea, pero siempre juntos.' },
-            { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Destino', msg: 'El universo conspiró para encontrarnos.' },
+            { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Destino', msg: 'El universo nos unió.' },
             { src: 'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png', tag: 'Te quiero', msg: 'Sentimiento infinito.' },
             { src: 'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png', tag: 'Brillante', msg: 'Tu luz me guía siempre.' },
             { src: 'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png', tag: 'Para siempre', msg: 'Nuestra historia continúa.' }
@@ -56,150 +56,119 @@
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             staticStars = [];
-            for (let i = 0; i < 300; i++) {
-                staticStars.push({ x: (Math.random()-0.5)*2000, y: (Math.random()-0.5)*2000, z: (Math.random()-0.5)*2000, sz: Math.random()*2 });
+            for (let i = 0; i < 200; i++) {
+                staticStars.push({ x: (Math.random()-0.5)*1500, y: (Math.random()-0.5)*1500, z: (Math.random()-0.5)*1500, sz: Math.random()*2 });
             }
-
             planetObjects = [];
             photoData.forEach((data, i) => {
                 const img = new Image();
                 img.crossOrigin = "anonymous";
                 img.src = data.src;
-                
+                const orbit = i % 2; // Solo dos órbitas
                 planetObjects.push({
-                    dist: 350 + (i * 40), // Órbitas más grandes para el zoom
-                    angle: (i * (Math.PI * 2 / photoData.length)),
-                    speed: 0.007 / (1 + i * 0.1),
-                    yOff: (Math.random() - 0.5) * 200,
-                    img: img, tag: data.tag, msg: data.msg, size: 130, lastPos: null
+                    dist: 250 + orbit * 120, // Distancia reducida para que se vean CERCA
+                    angle: (i * (Math.PI * 2 / 6)), // Distribución
+                    speed: 0.005 + Math.random() * 0.003,
+                    img: img, tag: data.tag, msg: data.msg, size: 140
                 });
             });
         }
 
-        // Motor 3D con Focal más corto para SUPER ZOOM
-        function rotate3D(x, y, z) {
+        function project(x, y, z) {
+            let cX = Math.cos(angleX), sX = Math.sin(angleX);
             let cY = Math.cos(angleY), sY = Math.sin(angleY);
-            let x1 = x * cY - z * sY, z1 = x * sY + z * cY;
-            let cX = Math.cos(angleX), sinX = Math.sin(angleX);
-            let y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
-            const focal = 250; // BAJADO de 600 a 250 para acercar la cámara
-            const s = focal / (focal + z2);
-            return { x: x1 * s + width / 2, y: y1 * s + height / 2, s: s, z: z2 };
-        }
-
-        // Función corregida: Texto Violeta Neón Grande
-        function drawPurePhoto(p, pos) {
-            const s = p.size * pos.s;
-            ctx.save();
-            ctx.translate(pos.x, pos.y);
-            
-            // Aura de luz
-            ctx.shadowBlur = 15 * pos.s; ctx.shadowColor = "rgba(168, 85, 247, 0.4)";
-            
-            // Imagen PNG recortada
-            if (p.img.complete && p.img.naturalWidth !== 0) ctx.drawImage(p.img, -s/2, -s/2, s, s);
-            
-            // Texto inferior GRANDE y VIOLETA NEÓN
-            ctx.shadowBlur = 0; 
-            ctx.fillStyle = "#a855f7"; // Violeta Neón
-            ctx.font = `bold ${18 * pos.s}px sans-serif`; // Letra más grande
-            ctx.textAlign = "center";
-            ctx.textBaseline = "top";
-            
-            // Borde blanco sutil para resaltar
-            ctx.strokeStyle = "white";
-            ctx.lineWidth = 1 * pos.s;
-            ctx.strokeText(p.tag, 0, (s/2) + 12 * pos.s);
-            ctx.fillText(p.tag, 0, (s/2) + 12 * pos.s);
-            
-            ctx.restore();
-        }
-
-        function drawOrbit(dist, zOff) {
-            ctx.beginPath(); ctx.strokeStyle = "rgba(168, 85, 247, 0.1)";
-            ctx.lineWidth = 1;
-            for(let a=0; a<Math.PI*2; a+=0.1) {
-                const p = rotate3D(Math.cos(a)*dist, zOff, Math.sin(a)*dist);
-                if(p.z > -200) { // No dibujar órbita si está muy cerca de la "cámara"
-                    if(a===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
-                }
-            }
-            ctx.stroke();
+            let ty = y * cX - z * sX;
+            let tz = y * sX + z * cX;
+            let tx = x * cY - tz * sY;
+            tz = x * sY + tz * cY;
+            const focal = 300; // FOV muy cerrado para efecto zoom
+            const scale = focal / (focal + tz + 400); 
+            return { x: tx * scale + width / 2, y: ty * scale + height / 2, scale, z: tz };
         }
 
         function draw() {
             if(isPaused) return;
-            // ELIMINADO ctx.clearRect para evitar el parpadeo
-            ctx.fillStyle = '#010005'; ctx.fillRect(0, 0, width, height); // Dibujar fondo firme
+            ctx.fillStyle = '#010005';
+            ctx.fillRect(0, 0, width, height);
 
             // Estrellas
             ctx.fillStyle = "white";
             staticStars.forEach(s => {
-                let p = rotate3D(s.x, s.y, s.z);
-                if (p.z > -200) {
-                    ctx.beginPath(); ctx.arc(p.x, p.y, s.sz * p.s, 0, Math.PI*2); ctx.fill();
+                let p = project(s.x, s.y, s.z);
+                ctx.beginPath(); ctx.arc(p.x, p.y, s.sz * p.scale * 2, 0, Math.PI*2); ctx.fill();
+            });
+
+            // Órbitas (Solo 2 caminos)
+            [250, 370].forEach(d => {
+                ctx.beginPath(); ctx.strokeStyle = "rgba(168, 85, 247, 0.15)";
+                for(let a=0; a<Math.PI*2; a+=0.1){
+                    let p = project(Math.cos(a)*d, 0, Math.sin(a)*d);
+                    if(a===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
                 }
+                ctx.stroke();
             });
 
-            angleX += (targetAngleX - angleX) * 0.1;
-            angleY += (targetAngleY - angleY) * 0.1;
+            // Sol central (Sin parpadeo)
+            const sun = project(0, 0, 0);
+            const grad = ctx.createRadialGradient(sun.x, sun.y, 0, sun.x, sun.y, 100 * sun.scale);
+            grad.addColorStop(0, 'white'); grad.addColorStop(0.3, '#ffcc00'); grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(sun.x, sun.y, 180 * sun.scale, 0, Math.PI*2); ctx.fill();
 
-            planetObjects.forEach(p => drawOrbit(p.dist, p.zOff));
-
-            // SOL CENTRAL GIGANTE ESTABLE
-            const n = rotate3D(0, 0, 0);
-            const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 115 * n.s);
-            g.addColorStop(0, '#fff'); g.addColorStop(0.2, '#ffeb3b'); g.addColorStop(1, 'transparent');
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(n.x, n.y, 160 * n.s, 0, Math.PI*2); ctx.fill();
-
-            // Z-Sorting y Proyección de Planetas
+            // Planetas con Z-Sorting
             const rendered = planetObjects.map(p => {
-                p.angle += p.speed;
-                const pos = rotate3D(Math.cos(p.angle)*p.dist, p.zOff, Math.sin(p.angle)*p.dist);
+                p.angle -= p.speed;
+                let pos = project(Math.cos(p.angle)*p.dist, 0, Math.sin(p.angle)*p.dist);
                 p.lastPos = pos;
-                return { data: p, pos: pos };
-            });
-
-            rendered.sort((a,b) => b.pos.z - a.pos.z);
+                return { data: p, pos };
+            }).sort((a,b) => b.pos.z - a.pos.z);
 
             rendered.forEach(r => {
-                if(r.pos.z > -200) drawPurePhoto(r.data, r.pos);
+                const p = r.data;
+                const s = p.size * r.pos.scale;
+                ctx.save();
+                ctx.translate(r.pos.x, r.pos.y);
+                if (p.img.complete && p.img.naturalWidth !== 0) {
+                    ctx.shadowBlur = 10; ctx.shadowColor = "#a855f7";
+                    ctx.drawImage(p.img, -s/2, -s/2, s, s);
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = "#a855f7";
+                    ctx.font = `bold ${20 * r.pos.scale}px sans-serif`;
+                    ctx.textAlign = "center";
+                    ctx.strokeStyle = "white"; ctx.lineWidth = 1;
+                    ctx.strokeText(p.tag, 0, (s/2) + 20 * r.pos.scale);
+                    ctx.fillText(p.tag, 0, (s/2) + 20 * r.pos.scale);
+                }
+                ctx.restore();
             });
 
             requestAnimationFrame(draw);
         }
 
         // Interacciones
-        function checkClick(ex, ey) {
-            for(let p of planetObjects) {
-                if(!p.lastPos) continue;
-                const d = Math.hypot(ex - p.lastPos.x, ey - p.lastPos.y);
-                if(d < 50 * p.lastPos.s) {
+        const start = (x, y) => { isDragging = true; lastX = x; lastY = y; };
+        const move = (x, y) => { if(!isDragging || isPaused) return; angleY += (x - lastX) * 0.005; lastX = x; };
+        const end = (x, y) => {
+            isDragging = false;
+            planetObjects.forEach(p => {
+                if(p.lastPos && Math.hypot(x - p.lastPos.x, y - p.lastPos.y) < 50) {
                     isPaused = true;
                     document.getElementById('pTitle').innerText = p.tag;
                     document.getElementById('pText').innerText = p.msg;
                     document.getElementById('overlay').style.display = 'block';
                     document.getElementById('popup').style.display = 'block';
-                    break;
                 }
-            }
-        }
-
-        const start = (x, y) => { isDragging = true; lastX = x; lastY = y; };
-        const move = (x, y) => { if(!isDragging || isPaused) return; targetAngleY += (x - lastX) * 0.007; targetAngleX -= (y - lastY) * 0.007; lastX = x; lastY = y; };
+            });
+        };
 
         window.addEventListener('mousedown', e => start(e.clientX, e.clientY));
         window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
-        window.addEventListener('mouseup', e => { isDragging = false; checkClick(e.clientX, e.clientY); });
+        window.addEventListener('mouseup', e => end(e.clientX, e.clientY));
         window.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY));
         window.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
-        window.addEventListener('touchend', e => { isDragging = false; checkClick(lastX, lastY); });
+        window.addEventListener('touchend', e => end(lastX, lastY));
 
-        document.getElementById('closeBtn').onclick = () => {
-            isPaused = false; document.getElementById('overlay').style.display = 'none';
-            document.getElementById('popup').style.display = 'none'; draw();
-        };
+        document.getElementById('closeBtn').onclick = () => { isPaused = false; document.getElementById('overlay').style.display = 'none'; document.getElementById('popup').style.display = 'none'; draw(); };
 
         init(); draw();
         window.onresize = init;
