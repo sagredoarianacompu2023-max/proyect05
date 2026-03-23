@@ -152,9 +152,34 @@
 
             rendered.sort((a,b) => b.pos.z - a.pos.z); // Z-SORTING REAL
 
-            // Dibujar Fotos Puras
-            rendered.forEach(r => drawPurePhoto(r.data, r.pos));
-
+           // Dibujo de Foto con Texto Inferior
+        function drawPurePhoto(p, pos) {
+            const s = p.size * pos.s; // Tamaño de la foto escalado por profundidad
+            
+            ctx.save();
+            ctx.translate(pos.x, pos.y); // Movemos el pincel a la posición 3D de la foto
+            
+            // 1. Efecto de Brillo (Aura)
+            ctx.shadowBlur = 15 * pos.s; 
+            ctx.shadowColor = "rgba(168, 85, 247, 0.4)";
+            
+            // 2. Dibujar la Imagen PNG
+            if (p.img.complete) {
+                ctx.drawImage(p.img, -s/2, -s/2, s, s);
+            }
+            
+            // 3. Dibujar el Texto (Debajo de la imagen)
+            ctx.shadowBlur = 0; // Quitamos el brillo para que el texto sea legible
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; // Blanco suave
+            ctx.font = `bold ${12 * pos.s}px 'Segoe UI', sans-serif`; // Tamaño dinámico según distancia
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+            
+            // Dibujamos el tag (ej: "A tu lado") unos 10 pixeles debajo de la foto
+            ctx.fillText(p.tag, 0, (s/2) + 10 * pos.s);
+            
+            ctx.restore();
+        }
             requestAnimationFrame(draw);
         }
 
