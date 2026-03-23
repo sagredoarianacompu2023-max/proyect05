@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxia de Recuerdos ✨</title>
+    <title>Galaxia de Recuerdos...✨</title>
     <style>
         body { margin: 0; background-color: #020105; overflow: hidden; touch-action: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         canvas { display: block; cursor: grab; }
         canvas:active { cursor: grabbing; }
 
         /* Estilos del Cartel (Pop-up) */
-        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; }
         #popup { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: white; padding: 25px; border-radius: 15px; text-align: center; 
-            z-index: 1000; max-width: 80%; box-shadow: 0 0 30px rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px; text-align: center; 
+            z-index: 1000; max-width: 80%; box-shadow: 0 0 40px rgba(168, 85, 247, 0.4);
+            border: 1px solid #a855f7;
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #popup h2 { margin-top: 0; color: #333; }
-        #popup p { color: #666; line-height: 1.5; font-size: 1.1rem; }
-        #closeBtn { background: #020105; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px; }
+        #popup h2 { margin-top: 0; color: #7e22ce; font-family: 'Courier New', monospace; }
+        #popup p { color: #333; line-height: 1.6; font-size: 1.1rem; }
+        #closeBtn { background: linear-gradient(45deg, #a855f7, #6366f1); color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; margin-top: 20px; font-weight: bold; }
         @keyframes popIn { from { opacity: 0; transform: translate(-50%, -60%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
     </style>
 </head>
@@ -42,7 +43,7 @@
         let angleX = 0, angleY = 0, targetAngleX = 0, targetAngleY = 0;
         let isDragging = false, isPaused = false, lastX, lastY;
 
-        // --- DATOS DE LAS IMÁGENES Y TEXTOS ---
+        // --- DATOS DE LAS IMÁGENES Y MENSAJES ---
         const photoData = [
             { src: 'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png', tag: 'A tu lado', msg: 'Cada segundo contigo es un regalo del universo.' },
             { src: 'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png', tag: 'Esa sonrisa', msg: 'Tu felicidad es mi parte favorita de cada día.' },
@@ -72,11 +73,11 @@
             photoData.forEach((data, i) => {
                 const img = new Image(); img.src = data.src;
                 planetObjects.push({
-                    dist: 180 + i * 55,
+                    dist: 190 + i * 55,
                     angle: (i * (Math.PI * 2 / photoData.length)),
                     speed: 0.005 / (1 + i * 0.1),
-                    size: 80,
-                    zOff: (Math.random() - 0.5) * 80,
+                    size: 90, // Tamaño de la foto recortada
+                    zOff: (Math.random() - 0.5) * 60,
                     img: img, tag: data.tag, msg: data.msg
                 });
             });
@@ -94,7 +95,7 @@
 
         // Dibujo de Órbita 3D
         function drawOrbit(dist, zOff) {
-            ctx.beginPath(); ctx.strokeStyle = "rgba(100, 255, 255, 0.1)";
+            ctx.beginPath(); ctx.strokeStyle = "rgba(100, 255, 255, 0.08)"; ctx.lineWidth = 1;
             for(let a=0; a<Math.PI*2; a+=0.1) {
                 const p = rotate3D(Math.cos(a)*dist, zOff, Math.sin(a)*dist);
                 if(a===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
@@ -102,14 +103,19 @@
             ctx.closePath(); ctx.stroke();
         }
 
-            // Foto
-            if (p.img.complete) ctx.drawImage(p.img, -s/2, -(s+pad+btm)/2 + pad, s, s);
+        // Dibujo de Foto Pura (Sin Marco ni Fondo Blanco)
+        function drawPurePhoto(p, pos) {
+            const s = p.size * pos.s;
             
-            // Texto bajo foto
-            ctx.fillStyle = "#333";
-            ctx.font = `bold ${11 * pos.s}px Arial`;
-            ctx.textAlign = "center";
-            ctx.fillText(p.tag, 0, (s+pad+btm)/2 - btm/2);
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            
+            // Efecto de Brillo Suave (Aura) alrededor de la foto recortada
+            ctx.shadowBlur = 15 * pos.s; ctx.shadowColor = "rgba(168, 85, 247, 0.4)";
+            
+            // Dibujar solo la Imagen (Asume que es PNG con transparencia)
+            if (p.img.complete) ctx.drawImage(p.img, -s/2, -s/2, s, s);
+            
             ctx.restore();
         }
 
@@ -126,7 +132,7 @@
             angleX += (targetAngleX - angleX) * 0.1;
             angleY += (targetAngleY - angleY) * 0.1;
 
-            // Órbitas
+            // Órbitas (Deseñadas finas para minimalismo)
             planetObjects.forEach(p => drawOrbit(p.dist, p.zOff));
 
             // Sol (Núcleo)
@@ -134,7 +140,7 @@
             const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 110 * n.s);
             g.addColorStop(0, '#fff'); g.addColorStop(0.2, '#ffeb3b'); g.addColorStop(1, 'transparent');
             ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(n.x, n.y, 160 * n.s, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(n.x, n.y, 170 * n.s, 0, Math.PI*2); ctx.fill();
 
             // Preparar Planetas para Z-Sorting
             const rendered = planetObjects.map(p => {
@@ -146,7 +152,8 @@
 
             rendered.sort((a,b) => b.pos.z - a.pos.z); // Z-SORTING REAL
 
-            rendered.forEach(r => drawPolaroid(r.data, r.pos));
+            // Dibujar Fotos Puras
+            rendered.forEach(r => drawPurePhoto(r.data, r.pos));
 
             requestAnimationFrame(draw);
         }
