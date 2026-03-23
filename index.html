@@ -3,34 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxia de Recuerdos...✨</title>
+    <title>Nuestra Galaxia. ✨</title>
     <style>
-        body { margin: 0; background-color: #020105; overflow: hidden; touch-action: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; background-color: #020105; overflow: hidden; touch-action: none; font-family: 'Segoe UI', sans-serif; }
         canvas { display: block; cursor: grab; }
         canvas:active { cursor: grabbing; }
 
-        /* Estilos del Cartel (Pop-up) */
-        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; }
+        /* Estilos del Cartel Interactivo */
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
         #popup { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px; text-align: center; 
-            z-index: 1000; max-width: 80%; box-shadow: 0 0 40px rgba(168, 85, 247, 0.4);
-            border: 1px solid #a855f7;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white; padding: 25px; border-radius: 20px; text-align: center; 
+            z-index: 1000; max-width: 80%; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #popup h2 { margin-top: 0; color: #7e22ce; font-family: 'Courier New', monospace; }
-        #popup p { color: #333; line-height: 1.6; font-size: 1.1rem; }
-        #closeBtn { background: linear-gradient(45deg, #a855f7, #6366f1); color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; margin-top: 20px; font-weight: bold; }
-        @keyframes popIn { from { opacity: 0; transform: translate(-50%, -60%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        #popup h2 { margin: 0 0 10px; color: #7e22ce; font-family: 'Courier New', monospace; }
+        #popup p { color: #444; line-height: 1.5; font-size: 1.1rem; }
+        #closeBtn { background: #7e22ce; color: white; border: none; padding: 10px 25px; border-radius: 20px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        @keyframes pop { from { opacity: 0; transform: translate(-50%, -60%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
     </style>
 </head>
 <body>
 
     <div id="overlay"></div>
     <div id="popup">
-        <h2 id="pTitle">Recuerdo Especial</h2>
-        <p id="pText">Cargando mensaje...</p>
-        <button id="closeBtn">Continuar Explorando</button>
+        <h2 id="pTitle">Recuerdo</h2>
+        <p id="pText">Mensaje...</p>
+        <button id="closeBtn">Cerrar</button>
     </div>
 
     <canvas id="galaxyCanvas"></canvas>
@@ -43,7 +42,7 @@
         let angleX = 0, angleY = 0, targetAngleX = 0, targetAngleY = 0;
         let isDragging = false, isPaused = false, lastX, lastY;
 
-        // --- DATOS DE LAS IMÁGENES Y MENSAJES ---
+        // --- TUS 11 IMÁGENES Y MENSAJES ---
         const photoData = [
             { src: 'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png', tag: 'A tu lado', msg: 'Cada segundo contigo es un regalo del universo.' },
             { src: 'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png', tag: 'Esa sonrisa', msg: 'Tu felicidad es mi parte favorita de cada día.' },
@@ -62,59 +61,69 @@
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             
-            // Estrellas estáticas (Fondo)
+            // Fondo de estrellas que no se mueven
             staticStars = [];
             for (let i = 0; i < 400; i++) {
                 staticStars.push({ x: Math.random()*width, y: Math.random()*height, sz: Math.random()*1.5, op: Math.random() });
             }
 
-            // Planetas / Fotos (3D)
             planetObjects = [];
             photoData.forEach((data, i) => {
                 const img = new Image(); img.src = data.src;
                 planetObjects.push({
-                    dist: 190 + i * 55,
+                    dist: 200 + i * 55, // Distancia de órbita
                     angle: (i * (Math.PI * 2 / photoData.length)),
                     speed: 0.005 / (1 + i * 0.1),
-                    size: 90, // Tamaño de la foto recortada
-                    zOff: (Math.random() - 0.5) * 60,
+                    size: 95, 
+                    zOff: (Math.random() - 0.5) * 70,
                     img: img, tag: data.tag, msg: data.msg
                 });
             });
         }
 
-        // Motor de Proyección 3D
+        // Motor 3D
         function rotate3D(x, y, z) {
             let cY = Math.cos(angleY), sY = Math.sin(angleY);
             let x1 = x * cY - z * sY, z1 = x * sY + z * cY;
             let cX = Math.cos(angleX), sX = Math.sin(angleX);
             let y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
-            const f = 600; const s = f / (f + z2);
+            const f = 650; const s = f / (f + z2);
             return { x: x1 * s + width / 2, y: y1 * s + height / 2, s: s, z: z2 };
         }
 
-        // Dibujo de Órbita 3D
         function drawOrbit(dist, zOff) {
-            ctx.beginPath(); ctx.strokeStyle = "rgba(100, 255, 255, 0.08)"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.strokeStyle = "rgba(100, 255, 255, 0.08)";
             for(let a=0; a<Math.PI*2; a+=0.1) {
                 const p = rotate3D(Math.cos(a)*dist, zOff, Math.sin(a)*dist);
                 if(a===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
             }
-            ctx.closePath(); ctx.stroke();
+            ctx.stroke();
         }
 
-        // Dibujo de Foto Pura (Sin Marco ni Fondo Blanco)
+        // Función corregida: Foto + Texto Dinámico
         function drawPurePhoto(p, pos) {
             const s = p.size * pos.s;
-            
             ctx.save();
             ctx.translate(pos.x, pos.y);
             
-            // Efecto de Brillo Suave (Aura) alrededor de la foto recortada
+            // Aura de luz
             ctx.shadowBlur = 15 * pos.s; ctx.shadowColor = "rgba(168, 85, 247, 0.4)";
             
-            // Dibujar solo la Imagen (Asume que es PNG con transparencia)
+            // Imagen
             if (p.img.complete) ctx.drawImage(p.img, -s/2, -s/2, s, s);
+            
+            // Texto inferior
+            ctx.shadowBlur = 0; 
+            ctx.fillStyle = "white";
+            ctx.font = `bold ${13 * pos.s}px 'Segoe UI', sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+            
+            // Borde del texto para lectura clara
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 2 * pos.s;
+            ctx.strokeText(p.tag, 0, (s/2) + 8 * pos.s);
+            ctx.fillText(p.tag, 0, (s/2) + 8 * pos.s);
             
             ctx.restore();
         }
@@ -123,104 +132,10 @@
             if(isPaused) return;
             ctx.fillStyle = '#020105'; ctx.fillRect(0, 0, width, height);
 
-            // Fondo Estrellas
             staticStars.forEach(s => {
                 ctx.fillStyle = `rgba(255,255,255,${s.op})`;
                 ctx.beginPath(); ctx.arc(s.x, s.y, s.sz, 0, Math.PI*2); ctx.fill();
             });
 
             angleX += (targetAngleX - angleX) * 0.1;
-            angleY += (targetAngleY - angleY) * 0.1;
-
-            // Órbitas (Deseñadas finas para minimalismo)
-            planetObjects.forEach(p => drawOrbit(p.dist, p.zOff));
-
-            // Sol (Núcleo)
-            const n = rotate3D(0, 0, 0);
-            const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 110 * n.s);
-            g.addColorStop(0, '#fff'); g.addColorStop(0.2, '#ffeb3b'); g.addColorStop(1, 'transparent');
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(n.x, n.y, 170 * n.s, 0, Math.PI*2); ctx.fill();
-
-            // Preparar Planetas para Z-Sorting
-            const rendered = planetObjects.map(p => {
-                p.angle += p.speed;
-                const pos = rotate3D(Math.cos(p.angle)*p.dist, p.zOff, Math.sin(p.angle)*p.dist);
-                p.lastPos = pos; // Guardar para detectar clic
-                return { data: p, pos: pos };
-            });
-
-            rendered.sort((a,b) => b.pos.z - a.pos.z); // Z-SORTING REAL
-
-           // Dibujo de Foto con Texto Inferior
-        function drawPurePhoto(p, pos) {
-            const s = p.size * pos.s; // Tamaño de la foto escalado por profundidad
-            
-            ctx.save();
-            ctx.translate(pos.x, pos.y); // Movemos el pincel a la posición 3D de la foto
-            
-            // 1. Efecto de Brillo (Aura)
-            ctx.shadowBlur = 15 * pos.s; 
-            ctx.shadowColor = "rgba(168, 85, 247, 0.4)";
-            
-            // 2. Dibujar la Imagen PNG
-            if (p.img.complete) {
-                ctx.drawImage(p.img, -s/2, -s/2, s, s);
-            }
-            
-            // 3. Dibujar el Texto (Debajo de la imagen)
-            ctx.shadowBlur = 0; // Quitamos el brillo para que el texto sea legible
-            ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; // Blanco suave
-            ctx.font = `bold ${12 * pos.s}px 'Segoe UI', sans-serif`; // Tamaño dinámico según distancia
-            ctx.textAlign = "center";
-            ctx.textBaseline = "top";
-            
-            // Dibujamos el tag (ej: "A tu lado") unos 10 pixeles debajo de la foto
-            ctx.fillText(p.tag, 0, (s/2) + 10 * pos.s);
-            
-            ctx.restore();
-        }
-            requestAnimationFrame(draw);
-        }
-
-        // Interacción
-        function checkClick(ex, ey) {
-            for(let p of planetObjects) {
-                if(!p.lastPos) continue;
-                const d = Math.hypot(ex - p.lastPos.x, ey - p.lastPos.y);
-                if(d < 50 * p.lastPos.s) {
-                    isPaused = true;
-                    document.getElementById('pTitle').innerText = p.tag;
-                    document.getElementById('pText').innerText = p.msg;
-                    document.getElementById('overlay').style.display = 'block';
-                    document.getElementById('popup').style.display = 'block';
-                    return;
-                }
-            }
-        }
-
-        const start = (x, y) => { isDragging = true; lastX = x; lastY = y; };
-        const move = (x, y) => {
-            if(!isDragging || isPaused) return;
-            targetAngleY += (x - lastX) * 0.007; targetAngleX -= (y - lastY) * 0.007;
-            lastX = x; lastY = y;
-        };
-        const end = (x, y) => { if(isDragging && Math.abs(x-lastX) < 2) checkClick(x, y); isDragging = false; };
-
-        window.addEventListener('mousedown', e => start(e.clientX, e.clientY));
-        window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
-        window.addEventListener('mouseup', e => end(e.clientX, e.clientY));
-        window.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY));
-        window.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
-        window.addEventListener('touchend', e => { isDragging = false; checkClick(lastX, lastY); });
-
-        document.getElementById('closeBtn').onclick = () => {
-            isPaused = false; document.getElementById('overlay').style.display = 'none';
-            document.getElementById('popup').style.display = 'none'; draw();
-        };
-
-        init(); draw();
-        window.onresize = init;
-    </script>
-</body>
-</html>
+            angleY
