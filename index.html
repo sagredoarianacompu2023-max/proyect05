@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxia 3D Estática ✨</title>
+    <title>Galaxia con Imagen 🌌</title>
     <style>
         body {
             margin: 0;
@@ -25,9 +25,9 @@
         
         let width, height;
         let staticStars = [];
-        let planets = [];
+        let planetImages = [];
         const numStars = 400; // Estrellas fijas al fondo
-        const numPlanets = 8;
+        const numPlanets = 5; // Número de imágenes/planetas
 
         // Variables de Cámara 3D
         let angleX = 0;
@@ -36,6 +36,10 @@
         let targetAngleY = 0;
         let isDragging = false;
         let lastMouseX, lastMouseY;
+
+        // Cargar la imagen base (luego la cambias por tu .png)
+        const planeteImagen = new Image();
+        planeteImagen.src = 'https://i.postimg.cc/GhDmKCJJ/retouch-2026032018130123.png'; // URL de ejemplo, cámbiala luego
 
         function init() {
             width = canvas.width = window.innerWidth;
@@ -52,18 +56,16 @@
                 });
             }
 
-            // 2. Crear planetas en 3D
-            planets = [];
-            const colors = ['#ffcc33', '#ff5733', '#33ff57', '#3380ff', '#ff33e6', '#00d4ff'];
+            // 2. Crear objetos 3D con imagen
+            planetImages = [];
             for (let i = 0; i < numPlanets; i++) {
-                planets.push({
-                    dist: 120 + i * 40, // Radio de órbita
+                planetImages.push({
+                    dist: 150 + i * 50, // Radio de órbita
                     orbitAngle: Math.random() * Math.PI * 2,
-                    speed: 0.005 + (Math.random() * 0.01),
-                    size: 4 + Math.random() * 6,
-                    color: colors[i % colors.length],
+                    speed: 0.003 + (Math.random() * 0.008),
+                    size: 50 + Math.random() * 30, // Tamaño de la imagen
                     // Coordenada Z para el 3D
-                    zOffset: (Math.random() - 0.5) * 100 
+                    zOffset: (Math.random() - 0.5) * 120 
                 });
             }
         }
@@ -89,94 +91,4 @@
             // Rotación en el eje X (vertical)
             let cosX = Math.cos(angleX);
             let sinX = Math.sin(angleX);
-            let y1 = y * cosX - z1 * sinX;
-            let z2 = y * sinX + z1 * cosX;
-
-            return project(x1, y1, z2);
-        }
-
-        function draw() {
-            // Limpiar fondo
-            ctx.fillStyle = '#020105';
-            ctx.fillRect(0, 0, width, height);
-
-            // 1. DIBUJAR ESTRELLAS ESTÁTICAS (No se mueven con la cámara)
-            ctx.shadowBlur = 0;
-            staticStars.forEach(s => {
-                ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            // Suavizar transición de cámara
-            angleX += (targetAngleX - angleX) * 0.1;
-            angleY += (targetAngleY - angleY) * 0.1;
-
-            // 2. DIBUJAR NÚCLEO (3D)
-            const nucleus = rotate3D(0, 0, 0);
-            const grad = ctx.createRadialGradient(nucleus.x, nucleus.y, 0, nucleus.x, nucleus.y, 70 * nucleus.scale);
-            grad.addColorStop(0, 'white');
-            grad.addColorStop(0.4, 'rgba(255, 255, 180, 0.8)');
-            grad.addColorStop(1, 'transparent');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(nucleus.x, nucleus.y, 80 * nucleus.scale, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 3. DIBUJAR PLANETAS (3D)
-            // Los ordenamos por Z para que los que están atrás se vean atrás
-            const renderedPlanets = planets.map(p => {
-                p.orbitAngle += p.speed;
-                let x = Math.cos(p.orbitAngle) * p.dist;
-                let y = p.zOffset;
-                let z = Math.sin(p.orbitAngle) * p.dist;
-                return { ...rotate3D(x, y, z), color: p.color, size: p.size, rawZ: z };
-            });
-
-            renderedPlanets.sort((a, b) => b.rawZ - a.rawZ);
-
-            renderedPlanets.forEach(p => {
-                ctx.shadowBlur = 15 * p.scale;
-                ctx.shadowColor = p.color;
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size * p.scale, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            requestAnimationFrame(draw);
-        }
-
-        // --- INTERACCIÓN ---
-        const startAction = (x, y) => {
-            isDragging = true;
-            lastMouseX = x;
-            lastMouseY = y;
-        };
-
-        const moveAction = (x, y) => {
-            if (!isDragging) return;
-            let dx = x - lastMouseX;
-            let dy = y - lastMouseY;
-            targetAngleY += dx * 0.01;
-            targetAngleX -= dy * 0.01;
-            lastMouseX = x;
-            lastMouseY = y;
-        };
-
-        window.addEventListener('mousedown', e => startAction(e.clientX, e.clientY));
-        window.addEventListener('mousemove', e => moveAction(e.clientX, e.clientY));
-        window.addEventListener('mouseup', () => isDragging = false);
-
-        window.addEventListener('touchstart', e => startAction(e.touches[0].clientX, e.touches[0].clientY));
-        window.addEventListener('touchmove', e => moveAction(e.touches[0].clientX, e.touches[0].clientY));
-        window.addEventListener('touchend', () => isDragging = false);
-
-        window.addEventListener('resize', init);
-
-        init();
-        draw();
-    </script>
-</body>
-</html>
+            let y1 = y * cosX - z1
