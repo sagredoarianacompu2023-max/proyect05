@@ -14,9 +14,12 @@
             z-index: 1000; width: 85%; border: 2px solid #a855f7; box-shadow: 0 0 20px #a855f7;
         }
         #closeBtn { background: #7e22ce; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; z-index: 2000; }
     </style>
 </head>
 <body>
+
+    <div id="loading">Cargando Galaxia...</div>
 
     <div id="overlay"></div>
     <div id="popup">
@@ -47,27 +50,32 @@
             { src: 'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png', tag: 'Para siempre', msg: 'Nuestra historia continúa.' }
         ];
 
+        let imagesLoaded = 0;
+
         function init() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            stars = Array.from({length: 150}, () => ({ x: Math.random()*width, y: Math.random()*height, s: Math.random()*2 }));
+            stars = Array.from({length: 100}, () => ({ x: Math.random()*width, y: Math.random()*height, s: Math.random()*2 }));
             
-            const baseDist = 180; 
-            const spacing = 75;   
+            const baseDist = 160; 
+            const spacing = 70;   
             
             planets = photoData.map((d, i) => {
                 const img = new Image();
-                img.crossOrigin = "anonymous";
-                img.src = d.src + "?t=" + Date.now()}; // Cache breaker
+                img.crossOrigin = "anonymous"; // CRÍTICO: Para evitar que el canvas se bloquee
+                img.onload = () => { 
+                    imagesLoaded++; 
+                    if(imagesLoaded >= 1) document.getElementById('loading').style.display = 'none';
+                };
+                img.src = d.src; 
                 
                 return {
                     img, ...d,
-                    angle: i * 0.6, 
-                    selfRotation: Math.random() * Math.PI, // Ángulo de rotación propia
-                    rotSpeed: 0.02, // Velocidad de giro sobre su eje
+                    angle: i * 0.5, 
+                    selfRotation: Math.random() * 5,
                     dist: baseDist + (i * spacing), 
                     speed: 0.003 - (i * 0.0001),    
-                    size: 100 + Math.random() * 50, // PLANETAS MÁS GRANDES
+                    size: 90 + Math.random() * 60, 
                     lastPos: {x:0, y:0, s:0}
                 };
             });
@@ -76,78 +84,71 @@
         function draw() {
             if(isPaused) return;
             ctx.fillStyle = '#010005';
-            ctx.fillRect(0, 0, width, height)};
+            ctx.fillRect(0, 0, width, height);
 
-            // Estrellas
             ctx.fillStyle = "white";
             stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
 
-            angleY += (targetAngleY - angleY) * 0.1;
+            angleY += (targetAngleY - angleY) * 0.05;
 
             // SOL GIGANTE
-            const sunGrad = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, 120);
-            sunGrad.addColorStop(0, '#fff'); sunGrad.addColorStop(0.4, '#ffeb3b'); sunGrad.addColorStop(1, 'transparent');
+            const sunGrad = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, 110);
+            sunGrad.addColorStop(0, '#fff'); sunGrad.addColorStop(0.3, '#ffcc00'); sunGrad.addColorStop(1, 'transparent');
             ctx.fillStyle = sunGrad;
-            ctx.beginPath(); ctx.arc(width/2, height/2, 180, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(width/2, height/2, 160, 0, Math.PI*2); ctx.fill();
 
-            // Renderizado de planetas con Z-Sorting simple (basado en el seno del ángulo)
-            const sortedPlanets = [...planets].sort((a, b) => {
-                return Math.sin(a.angle + angleY) - Math.sin(b.angle + angleY);
-            });
-
-            sortedPlanets.forEach(p => {
+            // Dibujar Planetas en Fila y con ZOOM cercano
+            planets.forEach(p => {
                 p.angle -= p.speed;
-                p.selfRotation += p.rotSpeed; // Giro sobre su eje
+                p.selfRotation += 0.01;
 
                 const x3d = Math.cos(p.angle + angleY) * p.dist;
                 const z3d = Math.sin(p.angle + angleY) * p.dist;
                 
-                // ZOOM: Focal reducido a 350 para acercar todo
-                const scale = 350 / (350 + z3d);
+                // ZOOM: Focal 300 para acercar mucho los planetas al frente
+                const scale = 300 / (300 + z3d);
                 const x2d = x3d * scale + width / 2;
                 const y2d = (z3d * 0.3) * scale + height / 2; 
                 const size = p.size * scale;
 
                 p.lastPos = { x: x2d, y: y2d, s: size };
 
-                ctx.save();
-                ctx.translate(x2d, y2d);
-                
-                // ROTACIÓN DEL PLANETA
-                ctx.rotate(Math.sin(p.selfRotation) * 0.1); // Balanceo/Giro sutil
+                // Dibujar solo si está en el rango visible
+                if (z3d < 250) {
+                    ctx.save();
+                    ctx.translate(x2d, y2d);
+                    ctx.rotate(p.selfRotation);
 
-                if (p.img.complete && p.img.naturalWidth !== 0) {
-                    ctx.shadowBlur = 20; ctx.shadowColor = "rgba(168, 85, 247, 0.5)";
-                    // Dibujar la imagen
-                    ctx.drawImage(p.img, -size/2, -size/2, size, size);
-                } else {
-                    // Círculo de carga mientras baja la foto
-                    ctx.fillStyle = "#333";
-                    ctx.beginPath(); ctx.arc(0, 0, size/2, 0, Math.PI*2); ctx.fill();
+                    if (p.img.complete && p.img.naturalWidth !== 0) {
+                        ctx.shadowBlur = 15; ctx.shadowColor = "#a855f7";
+                        ctx.drawImage(p.img, -size/2, -size/2, size, size);
+                    } else {
+                        // Planeta de color si la imagen falla
+                        ctx.fillStyle = "#333";
+                        ctx.beginPath(); ctx.arc(0, 0, size/2, 0, Math.PI*2); ctx.fill();
+                    }
+                    ctx.restore();
+
+                    // Texto violeta fijo
+                    ctx.fillStyle = "#a855f7";
+                    ctx.font = `bold ${16 * scale}px sans-serif`;
+                    ctx.textAlign = "center";
+                    ctx.strokeStyle = "white"; ctx.lineWidth = 1;
+                    ctx.strokeText(p.tag, x2d, y2d + size/2 + 20);
+                    ctx.fillText(p.tag, x2d, y2d + size/2 + 20);
                 }
-
-                ctx.restore();
-
-                // TEXTO (Fuera del save de rotación para que no gire el texto)
-                ctx.fillStyle = "#a855f7";
-                ctx.font = `bold ${16 * scale}px sans-serif`;
-                ctx.textAlign = "center";
-                ctx.strokeStyle = "white"; ctx.lineWidth = 1;
-                ctx.strokeText(p.tag, x2d, y2d + size/2 + 20);
-                ctx.fillText(p.tag, x2d, y2d + size/2 + 20);
             });
 
             requestAnimationFrame(draw);
         }
 
-        // --- INTERACCIONES ---
         const start = (x) => { isDragging = true; lastX = x; };
         const move = (x) => { if(isDragging) { targetAngleY += (x - lastX) * 0.01; lastX = x; } };
         const end = (x, y) => {
-            isDragging = false};
+            isDragging = false;
             planets.forEach(p => {
                 const d = Math.hypot(x - p.lastPos.x, y - p.lastPos.y);
-                if(d < p.lastPos.s / 2 + 10) }{
+                if(d < p.lastPos.s / 2 + 10) {
                     isPaused = true;
                     document.getElementById('pTitle').innerText = p.tag;
                     document.getElementById('pText').innerText = p.msg;
