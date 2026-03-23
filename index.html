@@ -3,20 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxia ✨</title>
+    <title>Galaxia 3D Estática ✨</title>
     <style>
         body {
             margin: 0;
             background-color: #020105;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            touch-action: none; /* Evita el scroll al tocar en móviles */
+            touch-action: none;
         }
-        canvas {
-            display: block;
-        }
+        canvas { display: block; cursor: grab; }
+        canvas:active { cursor: grabbing; }
     </style>
 </head>
 <body>
@@ -28,151 +24,159 @@
         const ctx = canvas.getContext('2d');
         
         let width, height;
-        let stars = [];
+        let staticStars = [];
         let planets = [];
-        const numStars = 280;
-        const numPlanets = 6;
+        const numStars = 400; // Estrellas fijas al fondo
+        const numPlanets = 8;
 
-        // Variables de interacción
-        let mouse = { x: -1000, y: -1000, active: false };
-        let rotationOffset = 0;
-        let targetRotationSpeed = 0.002;
+        // Variables de Cámara 3D
+        let angleX = 0;
+        let angleY = 0;
+        let targetAngleX = 0;
+        let targetAngleY = 0;
+        let isDragging = false;
+        let lastMouseX, lastMouseY;
 
-        function initCanvas() {
+        function init() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-        }
-
-        class Star {
-            constructor() {
-                this.init();
-            }
-            init() {
-                this.dist = Math.random() * (Math.min(width, height) * 0.45);
-                this.angle = Math.random() * Math.PI * 2;
-                this.size = Math.random() * 1.5 + 0.5;
-                this.baseSpeed = (0.001 + Math.random() * 0.002);
-                this.x = 0;
-                this.y = 0;
-            }
-            update() {
-                // La velocidad aumenta si el mouse está activo
-                let currentSpeed = mouse.active ? this.baseSpeed * 3 : this.baseSpeed;
-                this.angle += currentSpeed + rotationOffset;
-
-                let targetX = width / 2 + Math.cos(this.angle) * this.dist;
-                let targetY = height / 2 + Math.sin(this.angle) * this.dist;
-
-                // Interacción: Las estrellas se alejan un poco del puntero
-                if (mouse.active) {
-                    let dx = mouse.x - targetX;
-                    let dy = mouse.y - targetY;
-                    let d = Math.sqrt(dx*dx + dy*dy);
-                    if (d < 100) {
-                        targetX -= dx * 0.1;
-                        targetY -= dy * 0.1;
-                    }
-                }
-
-                this.x = targetX;
-                this.y = targetY;
-            }
-            draw() {
-                ctx.fillStyle = "white";
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        class Planet {
-            constructor() {
-                const colors = ['#ffcc33', '#ff5733', '#33ff57', '#3380ff', '#ff33e6'];
-                this.dist = 120 + Math.random() * (Math.min(width, height) * 0.3);
-                this.angle = Math.random() * Math.PI * 2;
-                this.size = 5 + Math.random() * 5;
-                this.color = colors[Math.floor(Math.random() * colors.length)];
-                this.baseSpeed = 0.002 + (1 / this.dist) * 0.5;
-            }
-            update() {
-                this.angle += this.baseSpeed + rotationOffset;
-                this.x = width / 2 + Math.cos(this.angle) * this.dist;
-                this.y = height / 2 + Math.sin(this.angle) * this.dist;
-            }
-            draw() {
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = this.color;
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
-        }
-
-        function createGalaxy() {
-            stars = [];
-            planets = [];
-            for (let i = 0; i < numStars; i++) stars.push(new Star());
-            for (let i = 0; i < numPlanets; i++) planets.push(new Planet());
-        }
-
-        function drawNucleus() {
-            // El núcleo brilla más si el mouse está cerca del centro
-            let pulse = mouse.active ? 1.5 : 1;
-            const grad = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, 60 * pulse);
-            grad.addColorStop(0, 'white');
-            grad.addColorStop(0.3, 'rgba(255, 255, 200, 0.9)');
-            grad.addColorStop(1, 'transparent');
             
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(width/2, height/2, 100 * pulse, 0, Math.PI * 2);
-            ctx.fill();
+            // 1. Crear estrellas de fondo (ESTÁTICAS)
+            staticStars = [];
+            for (let i = 0; i < numStars; i++) {
+                staticStars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.random() * 1.5,
+                    opacity: Math.random()
+                });
+            }
+
+            // 2. Crear planetas en 3D
+            planets = [];
+            const colors = ['#ffcc33', '#ff5733', '#33ff57', '#3380ff', '#ff33e6', '#00d4ff'];
+            for (let i = 0; i < numPlanets; i++) {
+                planets.push({
+                    dist: 120 + i * 40, // Radio de órbita
+                    orbitAngle: Math.random() * Math.PI * 2,
+                    speed: 0.005 + (Math.random() * 0.01),
+                    size: 4 + Math.random() * 6,
+                    color: colors[i % colors.length],
+                    // Coordenada Z para el 3D
+                    zOffset: (Math.random() - 0.5) * 100 
+                });
+            }
         }
 
-        function animate() {
-            ctx.fillStyle = 'rgba(2, 1, 5, 0.2)'; 
+        function project(x, y, z) {
+            // Proyección de perspectiva simple
+            const focalLength = 400;
+            const scale = focalLength / (focalLength + z);
+            return {
+                x: x * scale + width / 2,
+                y: y * scale + height / 2,
+                scale: scale
+            };
+        }
+
+        function rotate3D(x, y, z) {
+            // Rotación en el eje Y (horizontal)
+            let cosY = Math.cos(angleY);
+            let sinY = Math.sin(angleY);
+            let x1 = x * cosY - z * sinY;
+            let z1 = x * sinY + z * cosY;
+
+            // Rotación en el eje X (vertical)
+            let cosX = Math.cos(angleX);
+            let sinX = Math.sin(angleX);
+            let y1 = y * cosX - z1 * sinX;
+            let z2 = y * sinX + z1 * cosX;
+
+            return project(x1, y1, z2);
+        }
+
+        function draw() {
+            // Limpiar fondo
+            ctx.fillStyle = '#020105';
             ctx.fillRect(0, 0, width, height);
 
-            drawNucleus();
+            // 1. DIBUJAR ESTRELLAS ESTÁTICAS (No se mueven con la cámara)
+            ctx.shadowBlur = 0;
+            staticStars.forEach(s => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
 
-            stars.forEach(s => { s.update(); s.draw(); });
-            planets.forEach(p => { p.update(); p.draw(); });
+            // Suavizar transición de cámara
+            angleX += (targetAngleX - angleX) * 0.1;
+            angleY += (targetAngleY - angleY) * 0.1;
 
-            requestAnimationFrame(animate);
+            // 2. DIBUJAR NÚCLEO (3D)
+            const nucleus = rotate3D(0, 0, 0);
+            const grad = ctx.createRadialGradient(nucleus.x, nucleus.y, 0, nucleus.x, nucleus.y, 70 * nucleus.scale);
+            grad.addColorStop(0, 'white');
+            grad.addColorStop(0.4, 'rgba(255, 255, 180, 0.8)');
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(nucleus.x, nucleus.y, 80 * nucleus.scale, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 3. DIBUJAR PLANETAS (3D)
+            // Los ordenamos por Z para que los que están atrás se vean atrás
+            const renderedPlanets = planets.map(p => {
+                p.orbitAngle += p.speed;
+                let x = Math.cos(p.orbitAngle) * p.dist;
+                let y = p.zOffset;
+                let z = Math.sin(p.orbitAngle) * p.dist;
+                return { ...rotate3D(x, y, z), color: p.color, size: p.size, rawZ: z };
+            });
+
+            renderedPlanets.sort((a, b) => b.rawZ - a.rawZ);
+
+            renderedPlanets.forEach(p => {
+                ctx.shadowBlur = 15 * p.scale;
+                ctx.shadowColor = p.color;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * p.scale, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(draw);
         }
 
-        // --- EVENTOS DE INTERACCIÓN ---
-        const handleMove = (e) => {
-            const pos = e.touches ? e.touches[0] : e;
-            mouse.x = pos.clientX;
-            mouse.y = pos.clientY;
-            mouse.active = true;
-            rotationOffset = 0.01; // Acelera el giro al mover
+        // --- INTERACCIÓN ---
+        const startAction = (x, y) => {
+            isDragging = true;
+            lastMouseX = x;
+            lastMouseY = y;
         };
 
-        const handleStop = () => {
-            mouse.active = false;
-            rotationOffset = 0; // Vuelve a velocidad normal
+        const moveAction = (x, y) => {
+            if (!isDragging) return;
+            let dx = x - lastMouseX;
+            let dy = y - lastMouseY;
+            targetAngleY += dx * 0.01;
+            targetAngleX -= dy * 0.01;
+            lastMouseX = x;
+            lastMouseY = y;
         };
 
-        window.addEventListener('mousemove', handleMove);
-        window.addEventListener('mousedown', () => mouse.active = true);
-        window.addEventListener('mouseup', handleStop);
+        window.addEventListener('mousedown', e => startAction(e.clientX, e.clientY));
+        window.addEventListener('mousemove', e => moveAction(e.clientX, e.clientY));
+        window.addEventListener('mouseup', () => isDragging = false);
 
-        window.addEventListener('touchstart', handleMove);
-        window.addEventListener('touchmove', handleMove);
-        window.addEventListener('touchend', handleStop);
+        window.addEventListener('touchstart', e => startAction(e.touches[0].clientX, e.touches[0].clientY));
+        window.addEventListener('touchmove', e => moveAction(e.touches[0].clientX, e.touches[0].clientY));
+        window.addEventListener('touchend', () => isDragging = false);
 
-        window.addEventListener('resize', () => {
-            initCanvas();
-            createGalaxy();
-        });
+        window.addEventListener('resize', init);
 
-        initCanvas();
-        createGalaxy();
-        animate();
+        init();
+        draw();
     </script>
 </body>
 </html>
