@@ -3,48 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Inmersión Galáctica✨</title>
+    <title>Universo de Recuerdos ✨</title>
     <style>
-        body { margin: 0; background-color: #010005; overflow: hidden; touch-action: none; font-family: sans-serif; }
-        
-        /* Contenedor principal para el recorte */
-        #galaxyContainer {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden; /* CRÍTICO: Recorta todo lo que sobresalga de este contenedor */
-        }
-        
-        canvas { display: block; background: #010005; }
-        
+        body { margin: 0; background-color: #000; overflow: hidden; touch-action: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        canvas { display: block; }
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; }
         #popup { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #fff; padding: 25px; border-radius: 20px; text-align: center; 
-            z-index: 1000; width: 80%; border: 2px solid #a855f7;
+            background: #fff; padding: 30px; border-radius: 25px; text-align: center; 
+            z-index: 1000; width: 80%; border: 2px solid #a855f7; box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
         }
         #closeBtn { background: #7e22ce; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 <body>
-    
-    <div id="galaxyContainer">
 
-        <div id="overlay"></div>
-        <div id="popup">
-            <h2 id="pTitle" style="color:#7e22ce; margin:0">Recuerdo</h2>
-            <p id="pText" style="color:#333; line-height:1.5"></p>
-            <button id="closeBtn">Seguir Explorando</button>
-        </div>
-
-        <canvas id="galaxyCanvas"></canvas>
-        
+    <div id="overlay"></div>
+    <div id="popup">
+        <h2 id="pTitle" style="color:#7e22ce; margin:0">Recuerdo</h2>
+        <p id="pText" style="color:#333; line-height:1.6"></p>
+        <button id="closeBtn">Cerrar</button>
     </div>
+
+    <canvas id="galaxyCanvas"></canvas>
 
     <script>
         const canvas = document.getElementById('galaxyCanvas');
         const ctx = canvas.getContext('2d');
-        const container = document.getElementById('galaxyContainer'); // Referencia al contenedor
         let width, height, stars = [], planets = [];
         let angleY = 0, targetAngleY = 0, isDragging = false, isPaused = false, lastX;
 
@@ -55,7 +40,7 @@
             { src: 'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png', tag: 'Mágico', msg: 'Lo que tenemos es único.' },
             { src: 'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png', tag: 'Cómplices', msg: 'Gracias por tu compañía.' },
             { src: 'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png', tag: 'Mi mundo', msg: 'Eres el centro de mi galaxia.' },
-            { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Don de sea, pero juntos.' },
+            { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Donde sea, pero juntos.' },
             { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Destino', msg: 'El universo nos unió.' },
             { src: 'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png', tag: 'Te quiero', msg: 'Sentimiento infinito.' },
             { src: 'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png', tag: 'Brillante', msg: 'Tu luz me guía siempre.' },
@@ -63,29 +48,28 @@
         ];
 
         function init() {
-            // Usamos las dimensiones del contenedor para el canvas
-            width = canvas.width = container.clientWidth;
-            height = canvas.height = container.clientHeight;
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            stars = Array.from({length: 150}, () => ({ 
+                x: Math.random()*width, 
+                y: Math.random()*height, 
+                s: Math.random()*2,
+                o: Math.random()
+            }));
             
-            stars = Array.from({length: 200}, () => ({ x: Math.random()*width, y: Math.random()*height, s: Math.random()*2 }));
-            
-            const orbitDist = 450; 
-            const totalSpeed = 0.005; 
-
+            // Órbita única
+            const orbitDist = 500; 
             planets = photoData.map((d, i) => {
                 const img = new Image();
                 img.crossOrigin = "anonymous";
-                img.src = d.src + "?t=" + new Date().getTime();
+                img.src = d.src + "?t=" + Date.now();
                 
-                const randomSize = 80 + Math.random() * 80;
-
                 return {
                     img, ...d,
-                    angle: i * (Math.PI * 2 / photoData.length), 
-                    dist: orbitDist, 
-                    speed: totalSpeed,
-                    yOff: (Math.random() - 0.5) * 200, 
-                    size: randomSize, 
+                    angle: i * (Math.PI * 2 / photoData.length),
+                    dist: orbitDist,
+                    speed: 0.004,
+                    size: 110 + Math.random() * 70, // PLANETAS MÁS GRANDES
                     lastPos: {x:0, y:0, s:0}
                 };
             });
@@ -95,64 +79,62 @@
             if(isPaused) return;
             ctx.fillStyle = '#010005';
             ctx.fillRect(0, 0, width, height);
-            
-            // --- MODIFICACIÓN: APLICAR RECORTE EN EL CANVAS ---
-            // Creamos una ruta rectangular del tamaño del canvas y recortamos todo lo que se dibuje después.
-            ctx.save(); // Guardamos el estado sin recortar
-            ctx.beginPath();
-            ctx.rect(0, 0, width, height);
-            ctx.clip(); // Todo lo siguiente estará dentro del rectángulo
 
+            // Estrellas con parpadeo
             ctx.fillStyle = "white";
-            stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
+            stars.forEach(s => {
+                ctx.globalAlpha = 0.5 + Math.sin(Date.now()*0.001 + s.x)*0.5;
+                ctx.fillRect(s.x, s.y, s.s, s.s);
+            });
+            ctx.globalAlpha = 1;
 
             angleY += (targetAngleY - angleY) * 0.1;
 
-            ctx.beginPath();
-            ctx.strokeStyle = "rgba(100, 255, 255, 0.08)";
-            ctx.arc(width/2, height/2, 450, 0, Math.PI*2);
-            ctx.stroke();
+            // Ordenar por profundidad (Z-index manual)
+            const sorted = [...planets].sort((a,b) => {
+                return Math.sin(b.angle + angleY) - Math.sin(a.angle + angleY);
+            });
 
-            planets.forEach(p => {
-                p.angle -= p.speed; 
+            sorted.forEach(p => {
+                p.angle -= p.speed;
                 
                 const x3d = Math.cos(p.angle + angleY) * p.dist;
                 const z3d = Math.sin(p.angle + angleY) * p.dist;
                 
-                const scale = 500 / (500 + z3d);
-                const x2d = x3d * scale + width / 2;
-                const y2d = (z3d * 0.2) * scale + p.yOff + height / 2; 
-                const size = p.size * scale;
+                // Solo dibujamos si está en la parte de adelante (z3d < 0)
+                // O aplicamos un desvanecimiento si se aleja
+                let opacity = 1;
+                if (z3d > 0) opacity = Math.max(0, 1 - z3d/200); 
 
-                p.lastPos = { x: x2d, y: y2d, s: size };
+                if (opacity > 0) {
+                    const scale = 600 / (600 + z3d); // Punto de vista muy cercano
+                    const x2d = x3d * scale + width / 2;
+                    const y2d = height / 2; 
+                    const size = p.size * scale;
 
-                ctx.save();
-                ctx.translate(x2d, y2d);
+                    p.lastPos = { x: x2d, y: y2d, s: size };
 
-                if (p.img.complete && p.img.naturalWidth !== 0) {
-                    ctx.shadowBlur = 15; ctx.shadowColor = "rgba(168, 85, 247, 0.4)";
-                    ctx.drawImage(p.img, -size/2, -size/2, size, size);
-                } else {
-                    ctx.fillStyle = "#333";
-                    ctx.beginPath(); ctx.arc(0, 0, size/2, 0, Math.PI*2); ctx.fill();
+                    ctx.save();
+                    ctx.globalAlpha = opacity;
+                    ctx.translate(x2d, y2d);
+
+                    if (p.img.complete && p.img.naturalWidth !== 0) {
+                        ctx.shadowBlur = 20; ctx.shadowColor = "rgba(255,255,255,0.2)";
+                        ctx.drawImage(p.img, -size/2, -size/2, size, size);
+                    } else {
+                        ctx.fillStyle = "rgba(255,255,255,0.1)";
+                        ctx.beginPath(); ctx.arc(0, 0, size/2, 0, Math.PI*2); ctx.fill();
+                    }
+
+                    // Texto Blanco Elegante
+                    ctx.fillStyle = "white";
+                    ctx.font = `300 ${18 * scale}px sans-serif`;
+                    ctx.textAlign = "center";
+                    ctx.fillText(p.tag.toUpperCase(), 0, size/2 + 35);
+                    
+                    ctx.restore();
                 }
-
-                ctx.shadowBlur = 0;
-                ctx.fillStyle = "white";
-                ctx.font = `bold ${18 * scale}px sans-serif`; 
-                ctx.textAlign = "center";
-                ctx.strokeStyle = "rgba(255,255,255,0.7)"; ctx.lineWidth = 1;
-                
-                // --- MODIFICACIÓN: REVISAR SI EL TEXTO ESTÁ EN PANTALLA ---
-                // Calculamos los límites del texto y solo lo dibujamos si está dentro del canvas.
-                const textY = size/2 + 20;
-                //ctx.strokeText(p.tag, 0, textY); // Eliminado para un look más limpio, pero puedes volver a activarlo
-                ctx.fillText(p.tag, 0, textY);
-                
-                ctx.restore();
             });
-            
-            ctx.restore(); // Restauramos el estado sin recortar del canvas
 
             requestAnimationFrame(draw);
         }
@@ -173,14 +155,19 @@
             });
         };
 
-        container.addEventListener('mousedown', e => handleStart(e.clientX));
-        container.addEventListener('mousemove', e => handleMove(e.clientX));
-        container.addEventListener('mouseup', e => handleEnd(e.clientX, e.clientY));
-        container.addEventListener('touchstart', e => handleStart(e.touches[0].clientX));
-        container.addEventListener('touchmove', e => handleMove(e.touches[0].clientX));
-        container.addEventListener('touchend', e => handleEnd(lastX, height/2));
+        window.addEventListener('mousedown', e => handleStart(e.clientX));
+        window.addEventListener('mousemove', e => handleMove(e.clientX));
+        window.addEventListener('mouseup', e => handleEnd(e.clientX, e.clientY));
+        window.addEventListener('touchstart', e => handleStart(e.touches[0].clientX));
+        window.addEventListener('touchmove', e => handleMove(e.touches[0].clientX));
+        window.addEventListener('touchend', e => handleEnd(lastX, height/2));
 
-        document.getElementById('closeBtn').onclick = () => { isPaused = false; document.getElementById('overlay').style.display = 'none'; document.getElementById('popup').style.display = 'none'; draw(); };
+        document.getElementById('closeBtn').onclick = () => { 
+            isPaused = false; 
+            document.getElementById('overlay').style.display = 'none'; 
+            document.getElementById('popup').style.display = 'none'; 
+            draw(); 
+        };
 
         init(); draw();
         window.onresize = init;
