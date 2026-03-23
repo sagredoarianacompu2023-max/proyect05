@@ -3,88 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> nuestro espacio ✨</title>
+    <title>Nuestra Galaxia ❤️</title>
     <style>
-        body { margin: 0; background-color: #020105; overflow: hidden; touch-action: none; }
-        canvas { display: block; cursor: grab; }
+        body { margin: 0; background-color: #020105; overflow: hidden; touch-action: none; font-family: 'Courier New', monospace; }
+        canvas { display: block; cursor: crosshair; }
+        
+        /* Estilos para el cartel interactivo (Pop-up) */
+        #popup {
+            display: none; /* Oculto por defecto */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 50px rgba(168, 85, 247, 0.5);
+            z-index: 1000;
+            text-align: center;
+            max-width: 80%;
+            border: 2px solid #a855f7;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        #popup h2 { color: #7e22ce; margin-top: 0; }
+        #popup p { font-size: 1.1rem; line-height: 1.5; }
+
+        #closeBtn {
+            background: linear-gradient(45deg, #a855f7, #6366f1);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            font-family: inherit;
+            transition: transform 0.2s;
+        }
+
+        #closeBtn:hover { transform: scale(1.05); }
+
+        /* Fondo oscuro detrás del pop-up */
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -60%); } to { opacity: 1; transform: translate(-50%, -50%); } }
     </style>
 </head>
 <body>
+
+    <div id="overlay"></div>
+    <div id="popup">
+        <h2>Un Momento Especial ✨</h2>
+        <p id="popupText">Este es un recuerdo que guardo con mucho cariño.</p>
+        <button id="closeBtn">Cerrar y Explorar</button>
+    </div>
+
     <canvas id="galaxyCanvas"></canvas>
 
     <script>
         const canvas = document.getElementById('galaxyCanvas');
         const ctx = canvas.getContext('2d');
+        const popup = document.getElementById('popup');
+        const popupText = document.getElementById('popupText');
+        const overlay = document.getElementById('overlay');
+        const closeBtn = document.getElementById('closeBtn');
         
         let width, height;
         let staticStars = [];
         let planetObjects = [];
-        const numStars = 400;
+        const numStars = 350;
 
         let angleX = 0, angleY = 0;
         let targetAngleX = 0, targetAngleY = 0;
-        let isDragging = false;
+        let isDragging = false, isPaused = false;
         let lastMouseX, lastMouseY;
 
-        // Lista de tus 11 imágenes únicas
-        const imageSources = [
-            'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png',
-            'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png',
-            'https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png',
-            'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png',
-            'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png',
-            'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png',
-            'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png',
-            'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png',
-            'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png',
-            'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png',
-            'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png'
+        // --- TUS 11 FOTOS Y SUS TEXTOS LINDOS ---
+        const photoData = [
+            { src: 'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png', tag: 'Amo tu sonrisa' },
+            { src: 'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png', tag: 'Contigo siempre' },
+            { src: 'https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png', tag: 'Nuestro lugar' },
+            { src: 'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png', tag: 'Ese día mágico' },
+            { src: 'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png', tag: 'Mi felicidad' },
+            { src: 'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png', tag: 'Mi cómplice' },
+            { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Eres arte' },
+            { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Mi mundo entero' },
+            { src: 'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png', tag: 'Tu mirada...' },
+            { src: 'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png', tag: 'Abrazo eterno' },
+            { src: 'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png', tag: 'Te amo infinito' }
+        ];
+
+        // Mensajes largos para el cartel interactivo
+        const popupMessages = [
+            "Cada vez que veo esta foto, recuerdo lo feliz que me haces.",
+            "Este momento quedó grabado en mi corazón para siempre.",
+            "Me encanta cómo nos vemos juntos en este recuerdo.",
+            "Gracias por compartir tu vida y crear estos momentos conmigo.",
+            "Eres la razón de mi sonrisa en esta y en todas las fotos."
         ];
 
         function init() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            
-            // Fondo de estrellas
             staticStars = [];
-            for (let i = 0; i < numStars; i++) {
-                staticStars.push({ x: Math.random() * width, y: Math.random() * height, size: Math.random() * 1.5, op: Math.random() });
-            }
+            for (let i = 0; i < numStars; i++) staticStars.push({ x: Math.random() * width, y: Math.random() * height, size: Math.random() * 1.5, op: Math.random() });
 
-            // Crear planetas inmediatamente
             planetObjects = [];
-            imageSources.forEach((src, i) => {
-                const img = new Image();
-                img.src = src; // Empieza a cargar en segundo plano
-                
+            photoData.forEach((data, i) => {
+                const img = new Image(); img.src = data.src;
                 planetObjects.push({
-                    dist: 180 + i * 50,
-                    angle: (i * (Math.PI * 2 / imageSources.length)),
-                    speed: 0.007 / (1 + i * 0.15),
-                    size: 85,
-                    zOff: (Math.random() - 0.5) * 50,
-                    img: img // Se guardará aquí cuando termine de cargar
+                    dist: 190 + i * 50,
+                    angle: (i * (Math.PI * 2 / photoData.length)),
+                    speed: 0.006 / (1 + i * 0.1),
+                    size: 90, // Tamaño de la foto
+                    zOff: (Math.random() - 0.5) * 40,
+                    img: img, tag: data.tag, x:0, y:0, finalSize:0 // Para detectar clics
                 });
             });
         }
 
         function rotate3D(x, y, z) {
             let cY = Math.cos(angleY), sY = Math.sin(angleY);
-            let x1 = x * cY - z * sY;
-            let z1 = x * sY + z * cY;
+            let x1 = x * cY - z * sY, z1 = x * sY + z * cY;
             let cX = Math.cos(angleX), sX = Math.sin(angleX);
-            let y1 = y * cX - z1 * sX;
-            let z2 = y * sX + z1 * cX;
-            const f = 600;
-            const s = f / (f + z2);
+            let y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
+            const f = 600; const s = f / (f + z2);
             return { x: x1 * s + width / 2, y: y1 * s + height / 2, s: s, z: z2 };
         }
 
+        function drawPolaroid(ctx, p, size) {
+            const padding = 10 * p.s; // Margen blanco
+            const bottomSpace = 30 * p.s; // Espacio para el texto abajo
+            const totalW = size + padding * 2;
+            const totalH = size + padding + bottomSpace;
+
+            ctx.save();
+            ctx.translate(p.x, p.y); // Mover al centro del objeto
+            
+            // Efecto 3D de 'volteo' basado en la posición de la órbita
+            const flip = Math.cos(angleY + Math.PI/2) > 0 ? 1 : -1;
+            ctx.scale(flip, 1); 
+
+            // Brillo suave
+            ctx.shadowBlur = 15 * p.s; ctx.shadowColor = "rgba(168, 85, 247, 0.3)";
+
+            // 2. Dibujar la Imagen
+            ctx.drawImage(p.img, -size/2, -totalH/2 + padding, size, size);
+
+            // 3. Dibujar Texto Lindo
+            ctx.fillStyle = "#555";
+            ctx.font = `bold ${14 * p.s}px 'Courier New', monospace`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(p.tag, 0, totalH/2 - bottomSpace/2);
+
+            ctx.restore();
+        }
+
         function draw() {
+            if (isPaused) return; // Detener animación si el cartel está abierto
+
             ctx.fillStyle = '#020105';
             ctx.fillRect(0, 0, width, height);
 
-            // Estrellas
             staticStars.forEach(s => {
                 ctx.fillStyle = `rgba(255, 255, 255, ${s.op})`;
                 ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI*2); ctx.fill();
@@ -93,19 +182,12 @@
             angleX += (targetAngleX - angleX) * 0.1;
             angleY += (targetAngleY - angleY) * 0.1;
 
-            // Órbitas e Imágenes
             const rendered = planetObjects.map(p => {
                 p.angle += p.speed;
-                // Dibujar órbita primero
-                ctx.beginPath();
-                ctx.strokeStyle = "rgba(100, 255, 255, 0.08)";
-                for(let a=0; a<Math.PI*2; a+=0.2){
-                    const o = rotate3D(Math.cos(a)*p.dist, p.zOff, Math.sin(a)*p.dist);
-                    if(a===0) ctx.moveTo(o.x, o.y); else ctx.lineTo(o.x, o.y);
-                }
-                ctx.closePath(); ctx.stroke();
-
-                return { ...rotate3D(Math.cos(p.angle)*p.dist, p.zOff, Math.sin(p.angle)*p.dist), img: p.img, size: p.size };
+                const pos = rotate3D(Math.cos(p.angle)*p.dist, p.zOff, Math.sin(p.angle)*p.dist);
+                // Guardar posición final para detectar clics
+                p.currentX = pos.x; p.currentY = pos.y; p.currentScale = pos.s;
+                return { ...pos, ...p };
             });
 
             // SOL GIGANTE
@@ -113,44 +195,75 @@
             const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 120 * n.s);
             g.addColorStop(0, '#fff'); g.addColorStop(0.2, '#ffeb3b'); g.addColorStop(1, 'transparent');
             ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(n.x, n.y, 160 * n.s, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(n.x, n.y, 170 * n.s, 0, Math.PI*2); ctx.fill();
 
-            // Renderizado de fotos con profundidad
+            // Ordenar por profundidad Z
             rendered.sort((a,b) => b.z - a.z);
+
+            // Dibujar Marcos Polaroid
             rendered.forEach(p => {
-                const s = p.size * p.s;
                 if (p.img.complete && p.img.naturalWidth !== 0) {
-                    ctx.save();
-                    ctx.shadowBlur = 10 * p.s; ctx.shadowColor = "white";
-                    ctx.drawImage(p.img, p.x - s/2, p.y - s/2, s, s);
-                    ctx.restore();
-                } else {
-                    // Círculo temporal mientras carga la foto
-                    ctx.fillStyle = "rgba(255,255,255,0.1)";
-                    ctx.beginPath(); ctx.arc(p.x, p.y, s/3, 0, Math.PI*2); ctx.fill();
+                    drawPolaroid(ctx, p, p.size * p.s);
                 }
             });
 
             requestAnimationFrame(draw);
         }
 
-        const start = (x, y) => { isDragging = true; lastMouseX = x; lastMouseY = y; };
+        // --- INTERACCIÓN ---
+        function openPopup() {
+            isPaused = true;
+            // Elegir mensaje aleatorio
+            popupText.innerText = popupMessages[Math.floor(Math.random() * popupMessages.length)];
+            popup.style.display = 'block';
+            overlay.style.display = 'block';
+        }
+
+        function closePopup() {
+            isPaused = false;
+            popup.style.display = 'none';
+            overlay.style.display = 'none';
+            draw(); // Reiniciar animación
+        }
+
+        // Detectar si se tocó una imagen
+        function checkClick(x, y) {
+            for (let p of planetObjects) {
+                if (!p.currentX) continue;
+                const size = (p.size + 20) * p.currentScale; // Margen de clic
+                if (x > p.currentX - size/2 && x < p.currentX + size/2 &&
+                    y > p.currentY - size/2 && y < p.currentY + size/2) {
+                    openPopup();
+                    return true; // Clic detectado
+                }
+            }
+            return false;
+        }
+
+        const start = (x, y) => { if (isPaused) return; isDragging = true; lastMouseX = x; lastMouseY = y; };
         const move = (x, y) => {
-            if (!isDragging) return;
-            targetAngleY += (x - lastMouseX) * 0.007;
-            targetAngleX -= (y - lastMouseY) * 0.007;
+            if (!isDragging || isPaused) return;
+            targetAngleY += (x - lastMouseX) * 0.008;
+            targetAngleX -= (y - lastMouseY) * 0.008;
             lastMouseX = x; lastMouseY = y;
+        };
+        const end = (x, y) => {
+            if (!isDragging && !isPaused) { checkClick(x, y); } // Si no arrastró, fue un clic
+            isDragging = false;
         };
 
         window.addEventListener('mousedown', e => start(e.clientX, e.clientY));
         window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
-        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('mouseup', e => end(e.clientX, e.clientY));
+        
         window.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY));
         window.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
-        window.addEventListener('touchend', () => isDragging = false);
+        window.addEventListener('touchend', e => { end(lastMouseX, lastMouseY); }); // Usar últimas coordenadas registradas
 
-        init();
-        draw();
+        closeBtn.addEventListener('click', closePopup);
+        overlay.addEventListener('click', closePopup); // Cerrar al tocar fuera
+
+        init(); draw();
         window.addEventListener('resize', init);
     </script>
 </body>
