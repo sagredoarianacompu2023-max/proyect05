@@ -3,26 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vuelo Espacial de Recuerdos ✨</title>
+    <title>Galaxia de Recuerdos... ✨</title>
     <style>
-        body { margin: 0; background-color: #010005; overflow: hidden; touch-action: none; font-family: sans-serif; }
+        body { margin: 0; background-color: #010005; overflow: hidden; touch-action: none; font-family: 'Segoe UI', sans-serif; }
         canvas { display: block; cursor: move; }
-        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
+        
+        /* Estilos del Cartel (Pop-up) - NO ELIMINADOS */
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; }
         #popup { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: white; padding: 25px; border-radius: 20px; text-align: center; 
-            z-index: 1000; max-width: 80%; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+            background: white; padding: 30px; border-radius: 25px; text-align: center; 
+            z-index: 1000; max-width: 85%; box-shadow: 0 0 40px rgba(168, 85, 247, 0.5);
+            border: 2px solid #7e22ce;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #closeBtn { background: #7e22ce; color: white; border: none; padding: 10px 25px; border-radius: 20px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        #popup h2 { margin-top: 0; color: #7e22ce; font-family: 'Courier New', monospace; font-size: 1.5rem; }
+        #popup p { color: #333; line-height: 1.6; font-size: 1.1rem; margin-bottom: 20px; }
+        #closeBtn { 
+            background: linear-gradient(45deg, #7e22ce, #6366f1); 
+            color: white; border: none; padding: 12px 30px; border-radius: 30px; 
+            cursor: pointer; font-weight: bold; transition: transform 0.2s;
+        }
+        #closeBtn:hover { transform: scale(1.1); }
+        @keyframes popIn { from { opacity: 0; transform: translate(-50%, -60%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
     </style>
 </head>
 <body>
 
     <div id="overlay"></div>
     <div id="popup">
-        <h2 id="pTitle" style="color:#7e22ce">Recuerdo</h2>
-        <p id="pText" style="color:#444"></p>
-        <button id="closeBtn">Continuar Vuelo</button>
+        <h2 id="pTitle">Un Momento Especial</h2>
+        <p id="pText">Cargando tu recuerdo...</p>
+        <button id="closeBtn">Seguir Explorando</button>
     </div>
 
     <canvas id="galaxyCanvas"></canvas>
@@ -36,17 +48,17 @@
         let isDragging = false, isPaused = false, lastX, lastY;
 
         const photoData = [
-            { src: 'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png', tag: 'A tu lado', msg: 'Cada segundo contigo es un regalo.' },
-            { src: 'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png', tag: 'Esa sonrisa', msg: 'Tu felicidad es mi parte favorita.' },
-            { src: 'https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png', tag: 'Momentos', msg: 'Guardar recuerdos contigo es lo mejor.' },
-            { src: 'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png', tag: 'Mágico', msg: 'Lo que tenemos es único.' },
-            { src: 'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png', tag: 'Cómplices', msg: 'Gracias por tu compañía.' },
-            { src: 'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png', tag: 'Mi mundo', msg: 'Eres el centro de mi galaxia.' },
+            { src: 'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png', tag: 'A tu lado', msg: 'Cada segundo contigo es un regalo del universo.' },
+            { src: 'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png', tag: 'Esa sonrisa', msg: 'Tu felicidad es mi parte favorita de cada día.' },
+            { src: 'https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png', tag: 'Momentos', msg: 'Guardar recuerdos contigo es mi pasatiempo favorito.' },
+            { src: 'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png', tag: 'Mágico', msg: 'Lo que tenemos es único y brilla más que cualquier estrella.' },
+            { src: 'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png', tag: 'Cómplices', msg: 'Gracias por ser mi mejor compañía en este viaje.' },
+            { src: 'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png', tag: 'Mi mundo', msg: 'Eres el centro de mi propia galaxia personal.' },
             { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Donde sea, pero siempre juntos.' },
-            { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Destino', msg: 'El universo nos unió.' },
-            { src: 'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png', tag: 'Te quiero', msg: 'Sentimiento infinito.' },
-            { src: 'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png', tag: 'Brillante', msg: 'Tu luz me guía siempre.' },
-            { src: 'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png', tag: 'Para siempre', msg: 'Nuestra historia continúa.' }
+            { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Destino', msg: 'El universo conspiró para que nos encontráramos.' },
+            { src: 'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png', tag: 'Te quiero', msg: 'Un mensaje corto para un sentimiento infinito.' },
+            { src: 'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png', tag: 'Brillante', msg: 'Incluso en la oscuridad, tu luz me guía.' },
+            { src: 'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png', tag: 'Para siempre', msg: 'Nuestra historia apenas está comenzando.' }
         ];
 
         function init() {
@@ -54,11 +66,11 @@
             height = canvas.height = window.innerHeight;
             
             staticStars = [];
-            for (let i = 0; i < 400; i++) {
+            for (let i = 0; i < 600; i++) {
                 staticStars.push({
                     x: (Math.random() - 0.5) * 3000,
                     y: (Math.random() - 0.5) * 3000,
-                    z: Math.random() * 2000,
+                    z: (Math.random() - 0.5) * 3000,
                     sz: Math.random() * 2
                 });
             }
@@ -68,18 +80,17 @@
                 const img = new Image();
                 img.src = data.src;
                 planetObjects.push({
-                    x: (Math.random() - 0.5) * 1500,
-                    y: (Math.random() - 0.5) * 1000,
-                    z: i * (2000 / photoData.length), // Distribuidos en profundidad
-                    speed: 4 + Math.random() * 2,
+                    dist: 450 + (i * 35), 
+                    angle: (i * (Math.PI * 2 / photoData.length)),
+                    speed: 0.008, // Velocidad constante
+                    yOff: (Math.random() - 0.5) * 400,
                     img: img, tag: data.tag, msg: data.msg, 
-                    size: 120, lastPos: null
+                    size: 115, lastPos: null
                 });
             });
         }
 
         function project(x, y, z) {
-            // Rotación de cámara
             let cosX = Math.cos(angleX), sinX = Math.sin(angleX);
             let cosY = Math.cos(angleY), sinY = Math.sin(angleY);
 
@@ -88,13 +99,15 @@
             let tx = x * cosY - tz * sinY;
             tz = x * sinY + tz * cosY;
 
-            const focalLength = 400;
+            const focalLength = 500;
             const scale = focalLength / (focalLength + tz);
+            
             return {
                 x: tx * scale + width / 2,
                 y: ty * scale + height / 2,
                 scale: scale,
-                z: tz
+                z: tz,
+                visible: tz > -450 // Clipping para evitar que se peguen a la pantalla
             };
         }
 
@@ -103,35 +116,42 @@
             ctx.fillStyle = '#010005';
             ctx.fillRect(0, 0, width, height);
 
-            angleX += (targetAngleX - angleX) * 0.05;
-            angleY += (targetAngleY - angleY) * 0.05;
+            angleX += (targetAngleX - angleX) * 0.06;
+            angleY += (targetAngleY - angleY) * 0.06;
 
-            // Estrellas en movimiento (Efecto túnel)
+            // Estrellas envolventes
             ctx.fillStyle = "white";
             staticStars.forEach(s => {
-                s.z -= 10; // Velocidad de las estrellas
-                if (s.z < -400) s.z = 2000;
                 let p = project(s.x, s.y, s.z);
-                if (p.scale > 0) {
-                    ctx.globalAlpha = Math.min(1, p.scale);
+                if (p.visible && p.scale > 0) {
                     ctx.beginPath(); ctx.arc(p.x, p.y, s.sz * p.scale, 0, Math.PI*2); ctx.fill();
                 }
             });
-            ctx.globalAlpha = 1;
 
-            // Actualizar planetas y ordenar por profundidad
+            // Órbitas 360°
             planetObjects.forEach(p => {
-                p.z -= p.speed;
-                if (p.z < -400) { // Reiniciar al fondo cuando nos pasan
-                    p.z = 2000;
-                    p.x = (Math.random() - 0.5) * 1500;
-                    p.y = (Math.random() - 0.5) * 1000;
+                p.angle -= p.speed; // Giro de derecha a izquierda
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(100, 255, 255, 0.08)";
+                for(let i=0; i <= Math.PI*2; i+=0.2) {
+                    let ox = Math.cos(i) * p.dist;
+                    let oz = Math.sin(i) * p.dist;
+                    let pt = project(ox, p.yOff, oz);
+                    if (pt.visible) {
+                        if(i===0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+                    }
                 }
+                ctx.stroke();
             });
 
+            // Z-Sorting y Proyección de Fotos
             const rendered = planetObjects
-                .map(p => ({ data: p, pos: project(p.x, p.y, p.z) }))
-                .filter(r => r.pos.scale > 0)
+                .map(p => {
+                    let x = Math.cos(p.angle) * p.dist;
+                    let z = Math.sin(p.angle) * p.dist;
+                    return { data: p, pos: project(x, p.yOff, z) };
+                })
+                .filter(r => r.pos.visible && r.pos.scale > 0)
                 .sort((a, b) => b.pos.z - a.pos.z);
 
             rendered.forEach(r => {
@@ -144,13 +164,12 @@
                 ctx.translate(pos.x, pos.y);
                 
                 if (p.img.complete) {
-                    // Brillo y Foto
-                    ctx.shadowBlur = 20 * pos.scale;
+                    ctx.shadowBlur = 15 * pos.scale;
                     ctx.shadowColor = "rgba(168, 85, 247, 0.5)";
-                    ctx.globalAlpha = Math.min(1, pos.scale * 1.5);
+                    ctx.globalAlpha = Math.min(1, pos.scale);
                     ctx.drawImage(p.img, -s/2, -s/2, s, s);
                     
-                    // Texto
+                    // Texto dinámico bajo la imagen
                     ctx.shadowBlur = 0;
                     ctx.fillStyle = "white";
                     ctx.font = `bold ${14 * pos.scale}px sans-serif`;
@@ -161,18 +180,20 @@
                     ctx.fillText(p.tag, 0, (s/2) + 15 * pos.scale);
                 }
                 ctx.restore();
+                ctx.globalAlpha = 1;
             });
 
             requestAnimationFrame(draw);
         }
 
-        // Interacción
+        // --- SISTEMA DE CLIC Y CARTELES ---
         function checkClick(ex, ey) {
             for(let p of planetObjects) {
                 if(!p.lastPos) continue;
+                // Detectamos si el toque está cerca de la posición proyectada de la foto
                 const d = Math.hypot(ex - p.lastPos.x, ey - p.lastPos.y);
                 if(d < 60 * p.lastPos.scale) {
-                    isPaused = true;
+                    isPaused = true; // Pausamos la animación
                     document.getElementById('pTitle').innerText = p.tag;
                     document.getElementById('pText').innerText = p.msg;
                     document.getElementById('overlay').style.display = 'block';
@@ -185,18 +206,23 @@
         const start = (x, y) => { isDragging = true; lastX = x; lastY = y; };
         const move = (x, y) => { 
             if(!isDragging || isPaused) return; 
-            targetAngleY += (x - lastX) * 0.005; 
-            targetAngleX -= (y - lastY) * 0.005; 
+            targetAngleY += (x - lastX) * 0.006; 
+            targetAngleX -= (y - lastY) * 0.006; 
             lastX = x; lastY = y; 
         };
 
         window.addEventListener('mousedown', e => start(e.clientX, e.clientY));
         window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
-        window.addEventListener('mouseup', e => { isDragging = false; checkClick(e.clientX, e.clientY); });
+        window.addEventListener('mouseup', e => { 
+            if(isDragging && Math.abs(e.clientX - lastX) < 5) checkClick(e.clientX, e.clientY);
+            isDragging = false; 
+        });
+        
         window.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY));
         window.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
         window.addEventListener('touchend', e => { isDragging = false; checkClick(lastX, lastY); });
 
+        // Función para cerrar el cartel y reanudar
         document.getElementById('closeBtn').onclick = () => {
             isPaused = false; 
             document.getElementById('overlay').style.display = 'none';
