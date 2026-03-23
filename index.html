@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Universo de Recuerdos ✨</title>
+    <title>Galaxia✨</title>
     <style>
         body { margin: 0; background-color: #010005; overflow: hidden; touch-action: none; font-family: sans-serif; }
         canvas { display: block; background: #010005; }
@@ -40,7 +40,7 @@
             { src: 'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png', tag: 'Mágico', msg: 'Lo que tenemos es único.', col: '#ffff55' },
             { src: 'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png', tag: 'Cómplices', msg: 'Gracias por tu compañía.', col: '#ff55ff' },
             { src: 'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png', tag: 'Mi mundo', msg: 'Eres el centro de mi galaxia.', col: '#55ffff' },
-            { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Don de sea, pero juntos.', col: '#ffa500' },
+            { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Donde sea, pero juntos.', col: '#ffa500' },
             { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Destino', msg: 'El universo nos unió.', col: '#ffffff' },
             { src: 'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png', tag: 'Te quiero', msg: 'Sentimiento infinito.', col: '#ff0000' },
             { src: 'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png', tag: 'Brillante', msg: 'Tu luz me guía siempre.', col: '#00ff00' },
@@ -52,26 +52,24 @@
             height = canvas.height = window.innerHeight;
             stars = Array.from({length: 200}, () => ({ x: Math.random()*width, y: Math.random()*height, s: Math.random()*2 }));
             
-            // --- MODIFICACIÓN AQUÍ: MISMA ÓRBITA, DIFERENTES TAMAÑOS ---
-            const orbitDist = 300; // Distancia fija para todos los planetas
+            // --- CONFIGURACIÓN DE FILA ESTÁTICA ---
+            const baseDist = 200; // Distancia del primer planeta al sol
+            const spacing = 90;   // Espacio entre órbitas para evitar choques
+            
             planets = photoData.map((d, i) => {
                 const img = new Image();
                 img.crossOrigin = "anonymous";
-                img.src = d.src + "?t=" + new Date().getTime(); // Anti-caché
+                img.src = d.src + "?t=" + new Date().getTime();
                 
-                // Tamaño aleatorio para cada planeta (entre 80 y 160)
-                const randomSize = 80 + Math.random() * 80;
-
                 return {
                     img, ...d,
-                    angle: i * (Math.PI * 2 / photoData.length),
-                    dist: orbitDist, // Usamos la distancia fija de la órbita
-                    speed: 0.005 + Math.random() * 0.002,
-                    size: randomSize, // Usamos el tamaño aleatorio generado
+                    angle: i * 0.5, // Desfase inicial para que no salgan todos en la misma línea exacta
+                    dist: baseDist + (i * spacing), // Cada uno en su propio "carril"
+                    speed: 0.004 - (i * 0.0002),    // Los de afuera van un poquito más lento
+                    size: 70 + Math.random() * 80,   // Tamaños variados
                     lastPos: {x:0, y:0, s:0}
                 };
             });
-            // -----------------------------------------------------------
         }
 
         function draw() {
@@ -79,30 +77,35 @@
             ctx.fillStyle = '#010005';
             ctx.fillRect(0, 0, width, height);
 
-            // Estrellas fijas
             ctx.fillStyle = "white";
             stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
 
             angleY += (targetAngleY - angleY) * 0.1;
 
-            // Sol Central (Dibuja siempre primero)
+            // Sol Central
             const grad = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, 100);
             grad.addColorStop(0, 'white'); grad.addColorStop(0.2, '#ffcc00'); grad.addColorStop(1, 'transparent');
             ctx.fillStyle = grad;
             ctx.beginPath(); ctx.arc(width/2, height/2, 150, 0, Math.PI*2); ctx.fill();
 
+            // Dibujar Órbitas de Guía (Círculos tenues)
+            planets.forEach(p => {
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(168, 85, 247, 0.05)";
+                // Dibujamos un círculo simple para representar el camino
+                ctx.arc(width/2, height/2, p.dist * 0.8, 0, Math.PI*2); 
+                ctx.stroke();
+            });
+
             // Dibujar Planetas
             planets.forEach(p => {
                 p.angle -= p.speed;
-                // Proyección simple para que se vean grandes y orbiten el sol
                 const x3d = Math.cos(p.angle + angleY) * p.dist;
                 const z3d = Math.sin(p.angle + angleY) * p.dist;
                 
-                const scale = 400 / (400 + z3d);
+                const scale = 500 / (500 + z3d);
                 const x2d = x3d * scale + width / 2;
-                const y2d = (z3d * 0.2) * scale + height / 2; // Ligera inclinación
-                
-                // Escalamos el tamaño base del planeta según la profundidad
+                const y2d = (z3d * 0.25) * scale + height / 2; 
                 const size = p.size * scale;
 
                 p.lastPos = { x: x2d, y: y2d, s: size };
@@ -111,24 +114,21 @@
                 ctx.translate(x2d, y2d);
 
                 if (p.img.complete && p.img.naturalWidth !== 0) {
-                    // Si la imagen cargó, la dibuja
                     ctx.shadowBlur = 15; ctx.shadowColor = "#a855f7";
                     ctx.drawImage(p.img, -size/2, -size/2, size, size);
                 } else {
-                    // Si NO cargó, dibuja un círculo de color (Planeta de emergencia)
                     ctx.fillStyle = p.col;
                     ctx.shadowBlur = 20; ctx.shadowColor = p.col;
                     ctx.beginPath(); ctx.arc(0, 0, size/2, 0, Math.PI*2); ctx.fill();
                 }
 
-                // Texto Violeta Neón
                 ctx.shadowBlur = 0;
                 ctx.fillStyle = "#a855f7";
-                ctx.font = `bold ${18 * scale}px sans-serif`;
+                ctx.font = `bold ${16 * scale}px sans-serif`;
                 ctx.textAlign = "center";
                 ctx.strokeStyle = "white"; ctx.lineWidth = 1;
-                ctx.strokeText(p.tag, 0, size/2 + 20);
-                ctx.fillText(p.tag, 0, size/2 + 20);
+                ctx.strokeText(p.tag, 0, size/2 + 18);
+                ctx.fillText(p.tag, 0, size/2 + 18);
                 
                 ctx.restore();
             });
