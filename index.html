@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Galaxia✨</title>
+    <title>Galaxia de Recuerdos ✨</title>
     <style>
         body { margin: 0; background-color: #010005; overflow: hidden; touch-action: none; font-family: sans-serif; }
         canvas { display: block; background: #010005; }
@@ -11,7 +11,7 @@
         #popup { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: #fff; padding: 25px; border-radius: 20px; text-align: center; 
-            z-index: 1000; width: 80%; border: 2px solid #a855f7;
+            z-index: 1000; width: 85%; border: 2px solid #a855f7; box-shadow: 0 0 20px #a855f7;
         }
         #closeBtn { background: #7e22ce; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 15px; }
     </style>
@@ -34,39 +34,40 @@
         let angleY = 0, targetAngleY = 0, isDragging = false, isPaused = false, lastX;
 
         const photoData = [
-            { src: 'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png', tag: 'A tu lado', msg: 'Cada segundo contigo es un regalo.', col: '#ff5555' },
-            { src: 'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png', tag: 'Esa sonrisa', msg: 'Tu felicidad es mi parte favorita.', col: '#55ff55' },
-            { src: 'https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png', tag: 'Momentos', msg: 'Guardar recuerdos es lo mejor.', col: '#5555ff' },
-            { src: 'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png', tag: 'Mágico', msg: 'Lo que tenemos es único.', col: '#ffff55' },
-            { src: 'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png', tag: 'Cómplices', msg: 'Gracias por tu compañía.', col: '#ff55ff' },
-            { src: 'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png', tag: 'Mi mundo', msg: 'Eres el centro de mi galaxia.', col: '#55ffff' },
-            { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Donde sea, pero juntos.', col: '#ffa500' },
-            { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Destino', msg: 'El universo nos unió.', col: '#ffffff' },
-            { src: 'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png', tag: 'Te quiero', msg: 'Sentimiento infinito.', col: '#ff0000' },
-            { src: 'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png', tag: 'Brillante', msg: 'Tu luz me guía siempre.', col: '#00ff00' },
-            { src: 'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png', tag: 'Para siempre', msg: 'Nuestra historia continúa.', col: '#0000ff' }
+            { src: 'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png', tag: 'A tu lado', msg: 'Cada segundo contigo es un regalo.' },
+            { src: 'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png', tag: 'Esa sonrisa', msg: 'Tu felicidad es mi parte favorita.' },
+            { src: 'https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png', tag: 'Momentos', msg: 'Guardar recuerdos es lo mejor.' },
+            { src: 'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png', tag: 'Mágico', msg: 'Lo que tenemos es único.' },
+            { src: 'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png', tag: 'Cómplices', msg: 'Gracias por tu compañía.' },
+            { src: 'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png', tag: 'Mi mundo', msg: 'Eres el centro de mi galaxia.' },
+            { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Donde sea, pero juntos.' },
+            { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Destino', msg: 'El universo nos unió.' },
+            { src: 'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png', tag: 'Te quiero', msg: 'Sentimiento infinito.' },
+            { src: 'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png', tag: 'Brillante', msg: 'Tu luz me guía siempre.' },
+            { src: 'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png', tag: 'Para siempre', msg: 'Nuestra historia continúa.' }
         ];
 
         function init() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            stars = Array.from({length: 200}, () => ({ x: Math.random()*width, y: Math.random()*height, s: Math.random()*2 }));
+            stars = Array.from({length: 150}, () => ({ x: Math.random()*width, y: Math.random()*height, s: Math.random()*2 }));
             
-            // --- CONFIGURACIÓN DE FILA ESTÁTICA ---
-            const baseDist = 200; // Distancia del primer planeta al sol
-            const spacing = 90;   // Espacio entre órbitas para evitar choques
+            const baseDist = 180; 
+            const spacing = 75;   
             
             planets = photoData.map((d, i) => {
                 const img = new Image();
                 img.crossOrigin = "anonymous";
-                img.src = d.src + "?t=" + new Date().getTime();
+                img.src = d.src + "?t=" + Date.now(); // Cache breaker
                 
                 return {
                     img, ...d,
-                    angle: i * 0.5, // Desfase inicial para que no salgan todos en la misma línea exacta
-                    dist: baseDist + (i * spacing), // Cada uno en su propio "carril"
-                    speed: 0.004 - (i * 0.0002),    // Los de afuera van un poquito más lento
-                    size: 70 + Math.random() * 80,   // Tamaños variados
+                    angle: i * 0.6, 
+                    selfRotation: Math.random() * Math.PI, // Ángulo de rotación propia
+                    rotSpeed: 0.02, // Velocidad de giro sobre su eje
+                    dist: baseDist + (i * spacing), 
+                    speed: 0.003 - (i * 0.0001),    
+                    size: 100 + Math.random() * 50, // PLANETAS MÁS GRANDES
                     lastPos: {x:0, y:0, s:0}
                 };
             });
@@ -77,71 +78,76 @@
             ctx.fillStyle = '#010005';
             ctx.fillRect(0, 0, width, height);
 
+            // Estrellas
             ctx.fillStyle = "white";
             stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
 
             angleY += (targetAngleY - angleY) * 0.1;
 
-            // Sol Central
-            const grad = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, 100);
-            grad.addColorStop(0, 'white'); grad.addColorStop(0.2, '#ffcc00'); grad.addColorStop(1, 'transparent');
-            ctx.fillStyle = grad;
-            ctx.beginPath(); ctx.arc(width/2, height/2, 150, 0, Math.PI*2); ctx.fill();
+            // SOL GIGANTE
+            const sunGrad = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, 120);
+            sunGrad.addColorStop(0, '#fff'); sunGrad.addColorStop(0.4, '#ffeb3b'); sunGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = sunGrad;
+            ctx.beginPath(); ctx.arc(width/2, height/2, 180, 0, Math.PI*2); ctx.fill();
 
-            // Dibujar Órbitas de Guía (Círculos tenues)
-            planets.forEach(p => {
-                ctx.beginPath();
-                ctx.strokeStyle = "rgba(168, 85, 247, 0.05)";
-                // Dibujamos un círculo simple para representar el camino
-                ctx.arc(width/2, height/2, p.dist * 0.8, 0, Math.PI*2); 
-                ctx.stroke();
+            // Renderizado de planetas con Z-Sorting simple (basado en el seno del ángulo)
+            const sortedPlanets = [...planets].sort((a, b) => {
+                return Math.sin(a.angle + angleY) - Math.sin(b.angle + angleY);
             });
 
-            // Dibujar Planetas
-            planets.forEach(p => {
+            sortedPlanets.forEach(p => {
                 p.angle -= p.speed;
+                p.selfRotation += p.rotSpeed; // Giro sobre su eje
+
                 const x3d = Math.cos(p.angle + angleY) * p.dist;
                 const z3d = Math.sin(p.angle + angleY) * p.dist;
                 
-                const scale = 500 / (500 + z3d);
+                // ZOOM: Focal reducido a 350 para acercar todo
+                const scale = 350 / (350 + z3d);
                 const x2d = x3d * scale + width / 2;
-                const y2d = (z3d * 0.25) * scale + height / 2; 
+                const y2d = (z3d * 0.3) * scale + height / 2; 
                 const size = p.size * scale;
 
                 p.lastPos = { x: x2d, y: y2d, s: size };
 
                 ctx.save();
                 ctx.translate(x2d, y2d);
+                
+                // ROTACIÓN DEL PLANETA
+                ctx.rotate(Math.sin(p.selfRotation) * 0.1); // Balanceo/Giro sutil
 
                 if (p.img.complete && p.img.naturalWidth !== 0) {
-                    ctx.shadowBlur = 15; ctx.shadowColor = "#a855f7";
+                    ctx.shadowBlur = 20; ctx.shadowColor = "rgba(168, 85, 247, 0.5)";
+                    // Dibujar la imagen
                     ctx.drawImage(p.img, -size/2, -size/2, size, size);
                 } else {
-                    ctx.fillStyle = p.col;
-                    ctx.shadowBlur = 20; ctx.shadowColor = p.col;
+                    // Círculo de carga mientras baja la foto
+                    ctx.fillStyle = "#333";
                     ctx.beginPath(); ctx.arc(0, 0, size/2, 0, Math.PI*2); ctx.fill();
                 }
 
-                ctx.shadowBlur = 0;
+                ctx.restore();
+
+                // TEXTO (Fuera del save de rotación para que no gire el texto)
                 ctx.fillStyle = "#a855f7";
                 ctx.font = `bold ${16 * scale}px sans-serif`;
                 ctx.textAlign = "center";
                 ctx.strokeStyle = "white"; ctx.lineWidth = 1;
-                ctx.strokeText(p.tag, 0, size/2 + 18);
-                ctx.fillText(p.tag, 0, size/2 + 18);
-                
-                ctx.restore();
+                ctx.strokeText(p.tag, x2d, y2d + size/2 + 20);
+                ctx.fillText(p.tag, x2d, y2d + size/2 + 20);
             });
 
             requestAnimationFrame(draw);
         }
 
-        const handleStart = (x) => { isDragging = true; lastX = x; };
-        const handleMove = (x) => { if(isDragging) { targetAngleY += (x - lastX) * 0.01; lastX = x; } };
-        const handleEnd = (x, y) => {
+        // --- INTERACCIONES ---
+        const start = (x) => { isDragging = true; lastX = x; };
+        const move = (x) => { if(isDragging) { targetAngleY += (x - lastX) * 0.01; lastX = x; } };
+        const end = (x, y) => {
             isDragging = false;
             planets.forEach(p => {
-                if(Math.hypot(x - p.lastPos.x, y - p.lastPos.y) < p.lastPos.s / 2 + 10) {
+                const d = Math.hypot(x - p.lastPos.x, y - p.lastPos.y);
+                if(d < p.lastPos.s / 2 + 10) {
                     isPaused = true;
                     document.getElementById('pTitle').innerText = p.tag;
                     document.getElementById('pText').innerText = p.msg;
@@ -151,14 +157,19 @@
             });
         };
 
-        window.addEventListener('mousedown', e => handleStart(e.clientX));
-        window.addEventListener('mousemove', e => handleMove(e.clientX));
-        window.addEventListener('mouseup', e => handleEnd(e.clientX, e.clientY));
-        window.addEventListener('touchstart', e => handleStart(e.touches[0].clientX));
-        window.addEventListener('touchmove', e => handleMove(e.touches[0].clientX));
-        window.addEventListener('touchend', e => handleEnd(lastX, height/2));
+        window.addEventListener('mousedown', e => start(e.clientX));
+        window.addEventListener('mousemove', e => move(e.clientX));
+        window.addEventListener('mouseup', e => end(e.clientX, e.clientY));
+        window.addEventListener('touchstart', e => start(e.touches[0].clientX));
+        window.addEventListener('touchmove', e => move(e.touches[0].clientX));
+        window.addEventListener('touchend', e => end(lastX, height/2));
 
-        document.getElementById('closeBtn').onclick = () => { isPaused = false; document.getElementById('overlay').style.display = 'none'; document.getElementById('popup').style.display = 'none'; draw(); };
+        document.getElementById('closeBtn').onclick = () => { 
+            isPaused = false; 
+            document.getElementById('overlay').style.display = 'none'; 
+            document.getElementById('popup').style.display = 'none'; 
+            draw(); 
+        };
 
         init(); draw();
         window.onresize = init;
