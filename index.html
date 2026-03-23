@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuestro espacio ✨</title>
+    <title> Sistema de Recuerdos ✨</title>
     <style>
         body {
             margin: 0;
@@ -25,24 +25,61 @@
         
         let width, height;
         let staticStars = [];
-        let planetImages = [];
+        let planetObjects = [];
+        let loadedImages = [];
         const numStars = 450; 
-        const totalPlanets = 8; // Mercurio, Venus, Tierra, Marte, Júpiter, Saturno, Urano, Neptuno
 
         let angleX = 0, angleY = 0;
         let targetAngleX = 0, targetAngleY = 0;
         let isDragging = false;
         let lastMouseX, lastMouseY;
 
-        // --- TU FOTO PNG AQUÍ ---
-        const planeteImagen = new Image();
-        planeteImagen.src = 'https://i.postimg.cc/GhDmKCJJ/retouch-2026032018130123.png'; 
+        // --- TU LISTA DE 14 FOTOS PNG ---
+        const imageSources = [
+            'https://i.postimg.cc/65GDLThp/retouch-2026032222204374.png',
+            'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png',
+            'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png',
+            'https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png',
+            'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png',
+            'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png',
+            'https://i.postimg.cc/RFFY300Q/retouch-2026032222184081.png',
+            'https://i.postimg.cc/pTTS9ddZ/retouch-2026032222213310.png',
+            'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png',
+            'https://i.postimg.cc/Pqd9jynP/retouch-2026032222230083.png',
+            'https://i.postimg.cc/pdP4HCMy/retouch-2026032222233109.png',
+            'https://i.postimg.cc/HLTRgzDf/retouch-2026032222240104.png',
+            'https://i.postimg.cc/8CT9S4gP/retouch-2026032222243581.png',
+            'https://i.postimg.cc/g0GQWsFt/retouch-2026032222251110.png'
+        ];
+
+        // Cargar todas las imágenes
+        let imagesLoadedCount = 0;
+        function loadImages(callback) {
+            imageSources.forEach(src => {
+                const img = new Image();
+                img.src = src;
+                img.onload = () => {
+                    imagesLoadedCount++;
+                    if (imagesLoadedCount === imageSources.length) {
+                        callback();
+                    }
+                };
+                img.onerror = () => {
+                    console.error("Error cargando imagen:", src);
+                    imagesLoadedCount++; // Contar igual para no bloquear
+                    if (imagesLoadedCount === imageSources.length) {
+                        callback();
+                    }
+                };
+                loadedImages.push(img);
+            });
+        }
 
         function init() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             
-            // Estrellas de fondo que no se mueven
+            // Estrellas de fondo
             staticStars = [];
             for (let i = 0; i < numStars; i++) {
                 staticStars.push({
@@ -53,16 +90,22 @@
                 });
             }
 
-            // Crear los 8 planetas con distancias escalonadas
-            planetImages = [];
-            for (let i = 0; i < totalPlanets; i++) {
-                planetImages.push({
-                    dist: 130 + i * 55, // Cada planeta más lejos que el anterior
+            // Crear objetos con órbitas y asignar imágenes aleatorias
+            planetObjects = [];
+            // Usamos la cantidad de imágenes cargadas correctamente como número de "planetas"
+            const totalObjects = loadedImages.filter(img => img.complete && img.naturalWidth !== 0).length;
+            
+            for (let i = 0; i < totalObjects; i++) {
+                // Seleccionar imagen aleatoria de las cargadas
+                const randomImg = loadedImages[Math.floor(Math.random() * loadedImages.length)];
+                
+                planetObjects.push({
+                    dist: 130 + i * 40, // Distancias escalonadas
                     orbitAngle: Math.random() * Math.PI * 2,
-                    // Los planetas interiores son más rápidos (como en la realidad)
-                    speed: 0.015 / (1 + i * 0.5), 
+                    speed: 0.01 / (1 + i * 0.3), // Velocidad según distancia
                     size: 70 + Math.random() * 20, 
-                    zOffset: (Math.random() - 0.5) * 100 
+                    zOffset: (Math.random() - 0.5) * 80,
+                    img: randomImg
                 });
             }
         }
@@ -86,6 +129,27 @@
             };
         }
 
+        // --- FUNCIÓN PARA DIBUJAR ÓRBITAS IMAGINARIAS ---
+        function drawOrbit(dist, zOffset) {
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(100, 255, 255, 0.15)"; // Cian tenue y transparente
+            ctx.lineWidth = 1;
+            
+            // Dibujar la elipse de la órbita proyectada en 3D
+            for (let angle = 0; angle <= Math.PI * 2; angle += 0.05) {
+                let x = Math.cos(angle) * dist;
+                let z = Math.sin(angle) * dist;
+                const p = rotate3D(x, zOffset, z);
+                if (angle === 0) {
+                    ctx.moveTo(p.x, p.y);
+                } else {
+                    ctx.lineTo(p.x, p.y);
+                }
+            }
+            ctx.closePath();
+            ctx.stroke();
+        }
+
         function draw() {
             ctx.fillStyle = '#020105';
             ctx.fillRect(0, 0, width, height);
@@ -101,41 +165,46 @@
             angleX += (targetAngleX - angleX) * 0.08;
             angleY += (targetAngleY - angleY) * 0.08;
 
+            // Dibujar primero todas las órbitas (para que queden detrás de los objetos)
+            planetObjects.forEach(p => {
+                drawOrbit(p.dist, p.zOffset);
+            });
+
             // Sol / Núcleo central
             const n = rotate3D(0, 0, 0);
             const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 65 * n.scale);
             grad.addColorStop(0, '#fff');
             grad.addColorStop(0.2, '#fff9c4');
-            grad.addColorStop(0.5, 'rgba(255, 200, 50, 0.4)');
+            grad.addColorStop(0.5, 'rgba(255, 200, 50, 0.35)');
             grad.addColorStop(1, 'transparent');
             ctx.fillStyle = grad;
             ctx.beginPath();
             ctx.arc(n.x, n.y, 90 * n.scale, 0, Math.PI * 2);
             ctx.fill();
 
-            // Renderizar los 8 planetas
-            const rendered = planetImages.map(p => {
+            // Preparar objetos para renderizar con Z-sorting
+            const rendered = planetObjects.map(p => {
                 p.orbitAngle += p.speed;
                 let x = Math.cos(p.orbitAngle) * p.dist;
                 let z = Math.sin(p.orbitAngle) * p.dist;
-                return { ...rotate3D(x, p.zOffset, z), size: p.size };
+                return { ...rotate3D(x, p.zOffset, z), size: p.size, img: p.img };
             });
 
-            // Ordenar por profundidad para que se tapen correctamente
+            // Ordenar por profundidad Z
             rendered.sort((a, b) => b.z - a.z);
 
+            // Dibujar objetos con fotos
             rendered.forEach(p => {
                 const s = p.size * p.scale;
-                if (planeteImagen.complete && planeteImagen.naturalWidth !== 0) {
+                if (p.img.complete && p.img.naturalWidth !== 0) {
                     ctx.save();
-                    // Brillo de atmósfera para cada foto
-                    ctx.shadowBlur = 15 * p.scale;
-                    ctx.shadowColor = "rgba(100, 200, 255, 0.5)";
-                    ctx.drawImage(planeteImagen, p.x - s/2, p.y - s/2, s, s);
+                    ctx.shadowBlur = 12 * p.scale;
+                    ctx.shadowColor = "rgba(100, 200, 255, 0.4)";
+                    ctx.drawImage(p.img, p.x - s/2, p.y - s/2, s, s);
                     ctx.restore();
                 } else {
-                    // Marcador si la imagen no carga
-                    ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+                    // Marcador si la imagen falla
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, s/2.5, 0, Math.PI * 2);
                     ctx.fill();
@@ -161,8 +230,12 @@
         window.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
         window.addEventListener('touchend', () => isDragging = false);
 
-        init();
-        draw();
+        // Iniciar después de cargar las imágenes
+        loadImages(() => {
+            init();
+            draw();
+        });
+        
         window.addEventListener('resize', init);
     </script>
 </body>
