@@ -126,4 +126,77 @@
             // Preparar Planetas
             const rendered = planetObjects.map(p => {
                 p.angle -= p.speed;
-                let x = Math.cos(p.angle
+                let x = Math.cos(p.angle) * p.dist;
+                let z = Math.sin(p.angle) * p.dist;
+                let pos = project3D(x, p.yOff, z);
+                p.lastPos = pos;
+                return { data: p, pos };
+            }).sort((a, b) => b.pos.z - a.pos.z);
+
+            // Z-Sorting para Sol y Planetas
+            const sunPos = project3D(0, 0, 0);
+
+            rendered.forEach(r => {
+                const p = r.data;
+                const pos = r.pos;
+
+                // Dibujar el SOL GIGANTE cuando corresponda en la profundidad
+                if (Math.abs(pos.z - sunPos.z) < 100 && sunPos.z < pos.z) {
+                    const g = ctx.createRadialGradient(sunPos.x, sunPos.y, 0, sunPos.x, sunPos.y, 140 * sunPos.scale);
+                    g.addColorStop(0, '#fff'); g.addColorStop(0.2, '#ffeb3b'); g.addColorStop(1, 'transparent');
+                    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sunPos.x, sunPos.y, 200 * sunPos.scale, 0, Math.PI*2); ctx.fill();
+                }
+
+                // Dibujar Planetas Puros (Recortados)
+                const s = p.size * pos.scale;
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+                if (p.img.complete && p.img.naturalWidth !== 0) {
+                    ctx.shadowBlur = 15 * pos.scale;
+                    ctx.shadowColor = "rgba(168, 85, 247, 0.4)";
+                    ctx.drawImage(p.img, -s/2, -s/2, s, s);
+                    
+                    // Texto Violeta Neón
+                    ctx.shadowBlur = 0; ctx.fillStyle = "#a855f7"; ctx.font = `bold ${18 * pos.scale}px sans-serif`; ctx.textAlign = "center";
+                    ctx.strokeStyle = "white"; ctx.lineWidth = 1 * pos.scale; ctx.strokeText(p.tag, 0, (s/2) + 20 * pos.scale); ctx.fillText(p.tag, 0, (s/2) + 20 * pos.scale);
+                }
+                ctx.restore();
+            });
+
+            requestAnimationFrame(draw);
+        }
+
+        // Interacciones Mobile optimizadas
+        function checkClick(ex, ey) {
+            for(let p of planetObjects) {
+                if(!p.lastPos) continue;
+                const d = Math.hypot(ex - p.lastPos.x, ey - p.lastPos.y);
+                if(d < 60 * p.lastPos.scale) {
+                    isPaused = true;
+                    document.getElementById('pTitle').innerText = p.tag;
+                    document.getElementById('pText').innerText = p.msg;
+                    document.getElementById('overlay').style.display = 'block';
+                    document.getElementById('popup').style.display = 'block';
+                    break;
+                }
+            }
+        }
+
+        const start = (x, y) => { isDragging = true; lastX = x; lastY = y; };
+        const move = (x, y) => { if(!isDragging || isPaused) return; targetAngleY += (x - lastX) * 0.007; lastX = x; lastY = y; };
+
+        window.addEventListener('mousedown', e => start(e.clientX, e.clientY));
+        window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
+        window.addEventListener('mouseup', e => { if(isDragging && Math.abs(e.clientX - lastX) < 5) checkClick(e.clientX, e.clientY); isDragging = false; });
+        
+        window.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY));
+        window.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
+        window.addEventListener('touchend', e => { isDragging = false; checkClick(lastX, lastY); });
+
+        document.getElementById('closeBtn').onclick = () => { isPaused = false; document.getElementById('overlay').style.display = 'none'; document.getElementById('popup').style.display = 'none'; draw(); };
+
+        init(); draw();
+        window.onresize = init;
+    </script>
+</body>
+</html>
