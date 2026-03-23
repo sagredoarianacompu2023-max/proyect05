@@ -3,38 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxia de Recuerdos... ✨</title>
+    <title>Nuestra Galaxia ✨</title>
     <style>
-        body { margin: 0; background-color: #010005; overflow: hidden; touch-action: none; font-family: 'Segoe UI', sans-serif; }
-        canvas { display: block; cursor: move; }
-        
-        /* Estilos del Cartel (Pop-up) - NO ELIMINADOS */
-        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; }
+        body { margin: 0; background-color: #020105; overflow: hidden; touch-action: none; font-family: 'Segoe UI', sans-serif; }
+        canvas { display: block; cursor: grab; }
+        canvas:active { cursor: grabbing; }
+
+        /* Estilos del Cartel Interactivo */
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
         #popup { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: white; padding: 30px; border-radius: 25px; text-align: center; 
-            z-index: 1000; max-width: 85%; box-shadow: 0 0 40px rgba(168, 85, 247, 0.5);
-            border: 2px solid #7e22ce;
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white; padding: 25px; border-radius: 20px; text-align: center; 
+            z-index: 1000; max-width: 80%; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #popup h2 { margin-top: 0; color: #7e22ce; font-family: 'Courier New', monospace; font-size: 1.5rem; }
-        #popup p { color: #333; line-height: 1.6; font-size: 1.1rem; margin-bottom: 20px; }
-        #closeBtn { 
-            background: linear-gradient(45deg, #7e22ce, #6366f1); 
-            color: white; border: none; padding: 12px 30px; border-radius: 30px; 
-            cursor: pointer; font-weight: bold; transition: transform 0.2s;
-        }
-        #closeBtn:hover { transform: scale(1.1); }
-        @keyframes popIn { from { opacity: 0; transform: translate(-50%, -60%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        #popup h2 { margin: 0 0 10px; color: #7e22ce; font-family: 'Courier New', monospace; }
+        #popup p { color: #444; line-height: 1.5; font-size: 1.1rem; }
+        #closeBtn { background: #7e22ce; color: white; border: none; padding: 10px 25px; border-radius: 20px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        @keyframes pop { from { opacity: 0; transform: translate(-50%, -60%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
     </style>
 </head>
 <body>
 
     <div id="overlay"></div>
     <div id="popup">
-        <h2 id="pTitle">Un Momento Especial</h2>
-        <p id="pText">Cargando tu recuerdo...</p>
-        <button id="closeBtn">Seguir Explorando</button>
+        <h2 id="pTitle">Recuerdo</h2>
+        <p id="pText">Mensaje...</p>
+        <button id="closeBtn">Cerrar</button>
     </div>
 
     <canvas id="galaxyCanvas"></canvas>
@@ -47,6 +42,7 @@
         let angleX = 0, angleY = 0, targetAngleX = 0, targetAngleY = 0;
         let isDragging = false, isPaused = false, lastX, lastY;
 
+        // --- TUS 11 IMÁGENES Y MENSAJES ---
         const photoData = [
             { src: 'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png', tag: 'A tu lado', msg: 'Cada segundo contigo es un regalo del universo.' },
             { src: 'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png', tag: 'Esa sonrisa', msg: 'Tu felicidad es mi parte favorita de cada día.' },
@@ -65,169 +61,151 @@
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             
+            // Fondo de estrellas estáticas
             staticStars = [];
-            for (let i = 0; i < 600; i++) {
-                staticStars.push({
-                    x: (Math.random() - 0.5) * 3000,
-                    y: (Math.random() - 0.5) * 3000,
-                    z: (Math.random() - 0.5) * 3000,
-                    sz: Math.random() * 2
-                });
+            for (let i = 0; i < 400; i++) {
+                staticStars.push({ x: Math.random()*width, y: Math.random()*height, sz: Math.random()*1.5, op: Math.random() });
             }
 
             planetObjects = [];
             photoData.forEach((data, i) => {
-                const img = new Image();
-                img.src = data.src;
+                const img = new Image(); img.src = data.src;
                 planetObjects.push({
-                    dist: 450 + (i * 35), 
+                    dist: 200 + i * 55, // Órbitas escalonadas
                     angle: (i * (Math.PI * 2 / photoData.length)),
-                    speed: 0.008, // Velocidad constante
-                    yOff: (Math.random() - 0.5) * 400,
-                    img: img, tag: data.tag, msg: data.msg, 
-                    size: 115, lastPos: null
+                    speed: 0.005 / (1 + i * 0.1),
+                    size: 95, 
+                    zOff: (Math.random() - 0.5) * 70,
+                    img: img, tag: data.tag, msg: data.msg
                 });
             });
         }
 
-        function project(x, y, z) {
-            let cosX = Math.cos(angleX), sinX = Math.sin(angleX);
-            let cosY = Math.cos(angleY), sinY = Math.sin(angleY);
+        // Motor de Proyección 3D
+        function rotate3D(x, y, z) {
+            let cY = Math.cos(angleY), sinY = Math.sin(angleY);
+            let x1 = x * cosY - z * sinY, z1 = x * sY + z * cosY;
+            let cX = Math.cos(angleX), sinX = Math.sin(angleX);
+            let y1 = y * cosX - z1 * sinX, z2 = y * sinX + z1 * cosX;
+            const f = 650; const s = f / (f + z2);
+            return { x: x1 * s + width / 2, y: y1 * s + height / 2, s: s, z: z2 };
+        }
 
-            let ty = y * cosX - z * sinX;
-            let tz = y * sinX + z * cosX;
-            let tx = x * cosY - tz * sinY;
-            tz = x * sinY + tz * cosY;
+        function drawOrbit(dist, zOff) {
+            ctx.beginPath(); ctx.strokeStyle = "rgba(100, 255, 255, 0.08)";
+            for(let a=0; a<Math.PI*2; a+=0.1) {
+                const p = rotate3D(Math.cos(a)*dist, zOff, Math.sin(a)*dist);
+                if(a===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+            }
+            ctx.stroke();
+        }
 
-            const focalLength = 500;
-            const scale = focalLength / (focalLength + tz);
+        // FUNCIÓN MODIFICADA: Texto Grande y de Color
+        function drawPurePhoto(p, pos) {
+            const s = p.size * pos.s; // Tamaño de la foto escalado
+            ctx.save();
+            ctx.translate(pos.x, pos.y); // Mover al orígen 3D de la foto
             
-            return {
-                x: tx * scale + width / 2,
-                y: ty * scale + height / 2,
-                scale: scale,
-                z: tz,
-                visible: tz > -450 // Clipping para evitar que se peguen a la pantalla
-            };
+            // Aura violeta de la foto
+            ctx.shadowBlur = 15 * pos.s; ctx.shadowColor = "rgba(168, 85, 247, 0.4)";
+            
+            // Imagen PNG recortada
+            if (p.img.complete) ctx.drawImage(p.img, -s/2, -s/2, s, s);
+            
+            // --- NUEVO BLOQUE DE TEXTO GRANDE Y DE COLOR ---
+            ctx.shadowBlur = 0; // Desactivar sombra para el texto
+            
+            // COLOR DEL TEXTO: Violeta brillante con transparencia dinámica
+            ctx.fillStyle = `rgba(168, 85, 247, ${0.8 * pos.s})`; 
+            
+            // TAMAÑO DEL TEXTO: Agrandado a 16px (antes 13px), escalado dinámicamente
+            ctx.font = `bold ${16 * pos.s}px 'Segoe UI', sans-serif`; 
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+            
+            // BORDE DEL TEXTO: Blanco sutil para asegurar legibilidad
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.6 * pos.s})`;
+            ctx.lineWidth = 1.5 * pos.s;
+            ctx.strokeText(p.tag, 0, (s/2) + 12 * pos.s); // Dibujar borde
+            
+            // Dibujar el texto coloreado sobre el borde
+            ctx.fillText(p.tag, 0, (s/2) + 12 * pos.s); 
+            
+            ctx.restore();
         }
 
         function draw() {
             if(isPaused) return;
-            ctx.fillStyle = '#010005';
-            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = '#020105'; ctx.fillRect(0, 0, width, height);
 
-            angleX += (targetAngleX - angleX) * 0.06;
-            angleY += (targetAngleY - angleY) * 0.06;
-
-            // Estrellas envolventes
-            ctx.fillStyle = "white";
             staticStars.forEach(s => {
-                let p = project(s.x, s.y, s.z);
-                if (p.visible && p.scale > 0) {
-                    ctx.beginPath(); ctx.arc(p.x, p.y, s.sz * p.scale, 0, Math.PI*2); ctx.fill();
-                }
+                ctx.fillStyle = `rgba(255,255,255,${s.op})`;
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.sz, 0, Math.PI*2); ctx.fill();
             });
 
-            // Órbitas 360°
-            planetObjects.forEach(p => {
-                p.angle -= p.speed; // Giro de derecha a izquierda
-                ctx.beginPath();
-                ctx.strokeStyle = "rgba(100, 255, 255, 0.08)";
-                for(let i=0; i <= Math.PI*2; i+=0.2) {
-                    let ox = Math.cos(i) * p.dist;
-                    let oz = Math.sin(i) * p.dist;
-                    let pt = project(ox, p.yOff, oz);
-                    if (pt.visible) {
-                        if(i===0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
-                    }
-                }
-                ctx.stroke();
+            angleX += (targetAngleX - angleX) * 0.1;
+            angleY += (targetAngleY - angleY) * 0.1;
+
+            planetObjects.forEach(p => drawOrbit(p.dist, p.zOff));
+
+            // Sol Central Gigante
+            const n = rotate3D(0, 0, 0);
+            const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 115 * n.s);
+            g.addColorStop(0, '#fff'); g.addColorStop(0.2, '#ffeb3b'); g.addColorStop(1, 'transparent');
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(n.x, n.y, 175 * n.s, 0, Math.PI*2); ctx.fill();
+
+            // Z-Sorting: Ordenar por profundidad para que se tapen correctamente
+            const rendered = planetObjects.map(p => {
+                p.angle += p.speed;
+                const pos = rotate3D(Math.cos(p.angle)*p.dist, p.zOff, Math.sin(p.angle)*p.dist);
+                p.lastPos = pos; // Guardar posición para detección de clics
+                return { data: p, pos: pos };
             });
 
-            // Z-Sorting y Proyección de Fotos
-            const rendered = planetObjects
-                .map(p => {
-                    let x = Math.cos(p.angle) * p.dist;
-                    let z = Math.sin(p.angle) * p.dist;
-                    return { data: p, pos: project(x, p.yOff, z) };
-                })
-                .filter(r => r.pos.visible && r.pos.scale > 0)
-                .sort((a, b) => b.pos.z - a.pos.z);
+            rendered.sort((a,b) => b.pos.z - a.pos.z);
 
-            rendered.forEach(r => {
-                const p = r.data;
-                const pos = r.pos;
-                const s = p.size * pos.scale;
-                p.lastPos = pos;
-
-                ctx.save();
-                ctx.translate(pos.x, pos.y);
-                
-                if (p.img.complete) {
-                    ctx.shadowBlur = 15 * pos.scale;
-                    ctx.shadowColor = "rgba(168, 85, 247, 0.5)";
-                    ctx.globalAlpha = Math.min(1, pos.scale);
-                    ctx.drawImage(p.img, -s/2, -s/2, s, s);
-                    
-                    // Texto dinámico bajo la imagen
-                    ctx.shadowBlur = 0;
-                    ctx.fillStyle = "white";
-                    ctx.font = `bold ${14 * pos.scale}px sans-serif`;
-                    ctx.textAlign = "center";
-                    ctx.strokeStyle = "black";
-                    ctx.lineWidth = 2 * pos.scale;
-                    ctx.strokeText(p.tag, 0, (s/2) + 15 * pos.scale);
-                    ctx.fillText(p.tag, 0, (s/2) + 15 * pos.scale);
-                }
-                ctx.restore();
-                ctx.globalAlpha = 1;
-            });
+            rendered.forEach(r => drawPurePhoto(r.data, r.pos));
 
             requestAnimationFrame(draw);
         }
 
-        // --- SISTEMA DE CLIC Y CARTELES ---
+        // Interacciones y Clics
         function checkClick(ex, ey) {
             for(let p of planetObjects) {
                 if(!p.lastPos) continue;
-                // Detectamos si el toque está cerca de la posición proyectada de la foto
+                // Detectar si el clic está cerca de la posición 3D de la foto
                 const d = Math.hypot(ex - p.lastPos.x, ey - p.lastPos.y);
-                if(d < 60 * p.lastPos.scale) {
-                    isPaused = true; // Pausamos la animación
+                if(d < 50 * p.lastPos.s) {
+                    isPaused = true; // Pausar animación
                     document.getElementById('pTitle').innerText = p.tag;
                     document.getElementById('pText').innerText = p.msg;
                     document.getElementById('overlay').style.display = 'block';
                     document.getElementById('popup').style.display = 'block';
-                    break;
+                    return;
                 }
             }
         }
 
         const start = (x, y) => { isDragging = true; lastX = x; lastY = y; };
-        const move = (x, y) => { 
-            if(!isDragging || isPaused) return; 
-            targetAngleY += (x - lastX) * 0.006; 
-            targetAngleX -= (y - lastY) * 0.006; 
-            lastX = x; lastY = y; 
+        const move = (x, y) => {
+            if(!isDragging || isPaused) return;
+            targetAngleY += (x - lastX) * 0.007; targetAngleX -= (y - lastY) * 0.007;
+            lastX = x; lastY = y;
         };
+        const end = (x, y) => { if(isDragging && Math.abs(x-lastX) < 3) checkClick(x, y); isDragging = false; };
 
         window.addEventListener('mousedown', e => start(e.clientX, e.clientY));
         window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
-        window.addEventListener('mouseup', e => { 
-            if(isDragging && Math.abs(e.clientX - lastX) < 5) checkClick(e.clientX, e.clientY);
-            isDragging = false; 
-        });
-        
+        window.addEventListener('mouseup', e => end(e.clientX, e.clientY));
         window.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY));
         window.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
         window.addEventListener('touchend', e => { isDragging = false; checkClick(lastX, lastY); });
 
-        // Función para cerrar el cartel y reanudar
+        // Cerrar el cartel interactivo y reanudar animación
         document.getElementById('closeBtn').onclick = () => {
-            isPaused = false; 
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('popup').style.display = 'none'; 
-            draw();
+            isPaused = false; document.getElementById('overlay').style.display = 'none';
+            document.getElementById('popup').style.display = 'none'; draw();
         };
 
         init(); draw();
