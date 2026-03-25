@@ -48,33 +48,47 @@
         ];
 
         function init() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            stars = Array.from({length: 150}, () => ({ 
-                x: Math.random()*width, 
-                y: Math.random()*height, 
-                s: Math.random()*2,
-                o: Math.random()
-            }));
-            
-            const orbitDist = 500; 
-            planets = photoData.map((d, i) => {
-                const img = new Image();
-                img.crossOrigin = "anonymous";
-                img.src = d.src + "?t=" + Date.now();
-                
-                return {
-                    img, ...d,
-                    // AJUSTE: Separación manual (0.9 es la distancia entre planetas)
-                    angle: i * 0.9, 
-                    dist: orbitDist,
-                    speed: 0.002,
-                    // AJUSTE: Tamaño manual (Base 150 + algo de variedad)
-                    size: 70 + Math.random() * 50, 
-                    lastPos: {x:0, y:0, s:0}
-                };
-            });
-        }
+        
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    
+    // Estrellas de fondo
+    stars = Array.from({length: 150}, () => ({ 
+        x: Math.random()*width, 
+        y: Math.random()*height, 
+        s: Math.random()*2,
+        o: Math.random()
+    }));
+    
+    const orbitDist = 500; 
+    let currentAngle = 0; // Empezamos en el ángulo 0
+    const padding = 0.4;  // ESPACIO DE SEGURIDAD entre planetas (ajusta este número)
+
+    planets = photoData.map((d, i) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = d.src + "?t=" + Date.now();
+        
+        // Mantenemos tu tamaño preferido
+        const mySize = 70 + Math.random() * 50;
+        
+        // CÁLCULO DINÁMICO DE SEPARACIÓN:
+        // El ángulo aumenta según el tamaño del planeta para que no se choquen
+        const angleStep = (mySize / orbitDist) + padding;
+        currentAngle += angleStep;
+
+        return {
+            img, ...d,
+            angle: currentAngle, 
+            dist: orbitDist,
+            speed: 0.002,
+            size: mySize, 
+            lastPos: {x:0, y:0, s:0}
+        };
+    });
+}
+      
+          
 
         function draw() {
             if(isPaused) return;
