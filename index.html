@@ -57,7 +57,6 @@
                 o: Math.random()
             }));
             
-            // Órbita única
             const orbitDist = 500; 
             planets = photoData.map((d, i) => {
                 const img = new Image();
@@ -66,10 +65,12 @@
                 
                 return {
                     img, ...d,
-                    angle: i * 0.5,0.9,
+                    // AJUSTE: Separación manual (0.9 es la distancia entre planetas)
+                    angle: i * 0.9, 
                     dist: orbitDist,
                     speed: 0.002,
-                    size: 20 + Math.random() * 60, // PLANETAS MÁS GRANDES
+                    // AJUSTE: Tamaño manual (Base 150 + algo de variedad)
+                    size: 150 + Math.random() * 50, 
                     lastPos: {x:0, y:0, s:0}
                 };
             });
@@ -80,7 +81,6 @@
             ctx.fillStyle = '#010005';
             ctx.fillRect(0, 0, width, height);
 
-            // Estrellas con parpadeo
             ctx.fillStyle = "white";
             stars.forEach(s => {
                 ctx.globalAlpha = 0.5 + Math.sin(Date.now()*0.001 + s.x)*0.5;
@@ -90,7 +90,6 @@
 
             angleY += (targetAngleY - angleY) * 0.1;
 
-            // Ordenar por profundidad (Z-index manual)
             const sorted = [...planets].sort((a,b) => {
                 return Math.sin(b.angle + angleY) - Math.sin(a.angle + angleY);
             });
@@ -101,13 +100,11 @@
                 const x3d = Math.cos(p.angle + angleY) * p.dist;
                 const z3d = Math.sin(p.angle + angleY) * p.dist;
                 
-                // Solo dibujamos si está en la parte de adelante (z3d < 0)
-                // O aplicamos un desvanecimiento si se aleja
                 let opacity = 1;
-                if (z3d > 0) opacity = Math.max(0, 1 - z3d/200); 
+                if (z3d > 0) opacity = Math.max(0, 1 - z3d/300); 
 
                 if (opacity > 0) {
-                    const scale = 600 / (600 + z3d); // Punto de vista muy cercano
+                    const scale = 600 / (600 + z3d); 
                     const x2d = x3d * scale + width / 2;
                     const y2d = height / 2; 
                     const size = p.size * scale;
@@ -126,11 +123,11 @@
                         ctx.beginPath(); ctx.arc(0, 0, size/2, 0, Math.PI*2); ctx.fill();
                     }
 
-                    // Texto Blanco Elegante
+                    // AJUSTE: Texto Blanco más grande y elegante
                     ctx.fillStyle = "white";
-                    ctx.font = `100 ${7 * scale}px sans-serif`;
+                    ctx.font = `bold ${22 * scale}px sans-serif`;
                     ctx.textAlign = "center";
-                    ctx.fillText(p.tag.toUpperCase(), 0, size/2 + 35);
+                    ctx.fillText(p.tag.toUpperCase(), 0, size/2 + 40);
                     
                     ctx.restore();
                 }
@@ -160,7 +157,9 @@
         window.addEventListener('mouseup', e => handleEnd(e.clientX, e.clientY));
         window.addEventListener('touchstart', e => handleStart(e.touches[0].clientX));
         window.addEventListener('touchmove', e => handleMove(e.touches[0].clientX));
-        window.addEventListener('touchend', e => handleEnd(lastX, height/2));
+        window.addEventListener('touchend', e => {
+            if(lastX) handleEnd(lastX, height/2);
+        });
 
         document.getElementById('closeBtn').onclick = () => { 
             isPaused = false; 
