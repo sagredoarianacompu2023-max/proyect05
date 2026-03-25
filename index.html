@@ -34,17 +34,17 @@
         let angleY = 0, targetAngleY = 0, isDragging = false, isPaused = false, lastX;
 
         const photoData = [
-            { src: 'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png', tag: 'A tu lado', msg: 'Cada segundo contigo es un regalo.' , distanciaManual: 5},
-            { src: 'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png', tag: 'Esa sonrisa', msg: 'Tu felicidad es mi parte favorita.',distanciaManual: 4 },
-            { src: 'https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png', tag: 'Momentos', msg: 'Guardar recuerdos es lo mejor.',distanciaManual: 3 },
-            { src: 'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png', tag: 'Mágico', msg: 'Lo que tenemos es único.',distanciaManual: 0 },
+            { src: 'https://i.postimg.cc/QttzBMMn/retouch-2026032222143797.png', tag: 'A tu lado', msg: 'Cada segundo contigo es un regalo.' , distanciaManual: 2},
+            { src: 'https://i.postimg.cc/4dd0K33j/retouch-2026032222151948.png', tag: 'Esa sonrisa', msg: 'Tu felicidad es mi parte favorita.',distanciaManual: 2 },
+            { src: 'https://i.postimg.cc/JnnFyhh2/retouch-2026032222155495.png', tag: 'Momentos', msg: 'Guardar recuerdos es lo mejor.',distanciaManual: 2 },
+            { src: 'https://i.postimg.cc/633P7QQP/retouch-2026032222162350.png', tag: 'Mágico', msg: 'Lo que tenemos es único.',distanciaManual: 2 },
             { src: 'https://i.postimg.cc/KzzWKYYJ/retouch-2026032222165608.png', tag: 'Cómplices', msg: 'Gracias por tu compañía.',distanciaManual: 2 },
-            { src: 'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png', tag: 'Mi mundo', msg: 'Eres el centro de mi galaxia.',distanciaManual: 5 },
-            { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Donde sea, pero juntos.',distanciaManual: 3 },
-            { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Destino', msg: 'El universo nos unió.',distanciaManual: 1 },
-            { src: 'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png', tag: 'Te quiero', msg: 'Sentimiento infinito.',distanciaManual: 6 },
-            { src: 'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png', tag: 'Brillante', msg: 'Tu luz me guía siempre.',distanciaManual: 7 },
-            { src: 'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png', tag: 'Para siempre', msg: 'Nuestra historia continúa.',distanciaManual: 8 }
+            { src: 'https://i.postimg.cc/8Cw3PvTm/retouch-2026032222222095.png', tag: 'Mi mundo', msg: 'Eres el centro de mi galaxia.',distanciaManual: 2 },
+            { src: 'https://i.postimg.cc/26G2xN12/retouch-2026032222415072.png', tag: 'Tú y yo', msg: 'Donde sea, pero juntos.',distanciaManual: 2 },
+            { src: 'https://i.postimg.cc/Qtm0qZFq/retouch-2026032222425111.png', tag: 'Destino', msg: 'El universo nos unió.',distanciaManual: 2 },
+            { src: 'https://i.postimg.cc/j5cZhYDX/retouch-2026032222542337.png', tag: 'Te quiero', msg: 'Sentimiento infinito.',distanciaManual: 2 },
+            { src: 'https://i.postimg.cc/769mNr5X/retouch-2026032222550386.png', tag: 'Brillante', msg: 'Tu luz me guía siempre.',distanciaManual: 2 },
+            { src: 'https://i.postimg.cc/nz201fXv/retouch-2026032222555518.png', tag: 'Para siempre', msg: 'Nuestra historia continúa.',distanciaManual: 2 }
         ];
 
         function init() {
@@ -66,7 +66,7 @@
                 
                 return {
                     img, ...d,
-                    angle: i * (Math.PI * 2 / photoData.length),
+                    angle: d.distanciaManual,
                     dist: orbitDist,
                     speed: 0.004,
                     size: 20 + Math.random() * 70, // PLANETAS MÁS GRANDES
